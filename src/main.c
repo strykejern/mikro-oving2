@@ -6,14 +6,15 @@
 int main( void )
 {
 	//This is where the program starts
-	AUDIO_initialize();
+//	AUDIO_initialize();
 	BUTTONS_initialize( 0xFF );
 	LED_initialize( 0xFF );
+	IO_initialize_interrupts();
+
+	BITFIELD x = 1;
 
 	while( true )
 	{
-		LED_set_enabled( 0xFF );
-//		SLEEP( 1000 );
 	}
 	
 	return EXIT_SUCCESS;

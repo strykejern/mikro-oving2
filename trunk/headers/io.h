@@ -8,6 +8,6 @@
 //Function prototypes, these are "Public" functions
 void BUTTONS_initialize( const int bits );
 void LED_initialize( const int bits );
-void LED_enable( const int bits );
+void LED_set_enabled( const int bits );
 
 #endif	/* IO_HEADER_INCLUDED */

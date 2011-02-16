@@ -27,7 +27,8 @@ void LED_initialize( const int bits )
 	pioc->pdr = ~bits;
 }
 
-void LED_enable( const int bits )
+void LED_set_enabled( const int bits )
 {
-	pioc->codr = bits;
+	pioc->codr = ~bits;
+	pioc->sodr = bits;
 }

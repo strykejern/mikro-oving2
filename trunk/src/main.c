@@ -11,7 +11,7 @@ int main( void )
 	//This is where the program starts
 	while( true )
 	{
-		LED_enable( 0xFF );
+		LED_set_enabled( 0xFF );
 	}
 	
 	return EXIT_SUCCESS;

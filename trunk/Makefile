@@ -8,15 +8,14 @@ compile: 	src/main.c src/io.c
 
 #Cleanup object files and binaries
 clean:		
-		rm -rf *.o *.elf
-		make compile
+		rm -rf *.o
 
 #Do everyting
 all:
-		make clean
 		make compile
 		make upload
 		make debug
+		make clean
 
 #Upload the binary to the microcontroller
 .PHONY: 	upload
@@ -24,11 +23,11 @@ upload:		$(BINARY)
 		avr32program halt
 		sleep 3
 		avr32program program -f0,8Mb -e $(BINARY)
-		sleep 2
 
 
 .PHONY: 	debug
 debug:		$(BINARY)
+		sleep 2
 		avr32gdbproxy -f 0,8MB -a remote:1024 &
 		sleep 1
-		avr32-gdb $(BINARY) -eval-command="target remote:1024"
+		avr32-gdb -eval-command="file main.elf" -eval-command="target remote:1024"

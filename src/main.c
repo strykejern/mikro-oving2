@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include "../headers/typedef.h"
 #include "../headers/io.h"
 

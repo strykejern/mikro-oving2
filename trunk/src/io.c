@@ -11,12 +11,7 @@ static volatile avr32_pio_t *pioc = &AVR32_PIOC;	//LED
 static volatile avr32_dac_t *pdac = &AVR32_DAC;		//Digital to Audio Converter
 static volatile avr32_sm_t *psm   = &AVR32_SM;		//Power Manager
 
-
-__int_handler *BUTTON_handle_interrupt() 
-{
-	LED_set_enabled( ~pioc->sodr );
-	return 0;
-}
+__int_handler *piob_int_handler(void);
 
 
 /** This function initializes the audio system we are using **/
@@ -44,9 +39,7 @@ void AUDIO_initialize()
 /** This function initializes the buttons **/
 void BUTTONS_initialize( const BITFIELD bits ) 
 {
-	//Initialize interrupts
-	set_interrupts_base( (void *) AVR32_INTC_ADDRESS );
-	register_interrupt( (__int_handler) BUTTON_handle_interrupt, AVR32_DAC_IRQ / 32, AVR32_DAC_IRQ % 32, INT0 );
+	piob->odr = 0xFF;		//Disable output on buttons
 
 	//Enable switches
 	piob->per = bits;		//Register enable
@@ -77,3 +70,20 @@ void LED_set_enabled( const BITFIELD bits )
 	pioc->sodr = bits;
 }
 
+/** Initialize interrupts, do last **/
+void IO_initialize_interrupts()
+{
+	set_interrupts_base( (void *) AVR32_INTC_ADDRESS );
+	register_interrupt( (__int_handler)( piob_int_handler ), AVR32_PIOB_IRQ / 32, AVR32_PIOB_IRQ % 32, INT0 );
+	init_interrupts();
+}
+
+__int_handler *piob_int_handler() 
+{
+	int status = piob->isr;
+
+	LED_set_enabled( status );
+
+	DEBOUNCE();
+	return 0;
+}

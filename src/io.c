@@ -1,34 +1,45 @@
+#include <avr32/ap7000.h>
+#include <sys/interrupts.h>
+
+#include "../headers/typedef.h"
 #include "../headers/io.h"
 
 //Input/Output control
 static volatile avr32_pio_t *piob = &AVR32_PIOB;	//Buttons
 static volatile avr32_pio_t *pioc = &AVR32_PIOC;	//LED
 
+static volatile avr32_dac_t *pdac = &AVR32_DAC;		//Digital to Audio Converter
+static volatile avr32_sm_t *psm   = &AVR32_SM;		//Power Manager
 
-void BUTTONS_initialize( const int bits )
-{
+
+void DAC_initialize() {
+	pdac->CR.en = true;
+}
+
+
+void BUTTONS_initialize( const BITFIELD bits ) {
 	//Enable switches
-	piob->per = bits;
-	piob->ier = bits;
-	piob->puer = bits;
+	piob->per = bits;		//Register enable
+	piob->ier = bits;		//Interrupt enable
+	piob->puer = bits;		//Pullup enable
 
 	//Disable everything that isn't enabled
 	piob->pdr = ~bits;
 	piob->idr = ~bits;
 }
 
-void LED_initialize( const int bits )
-{
+void LED_initialize( const BITFIELD bits ) {
 	//Enable LED
-	pioc->per = bits;
-	pioc->oer = bits;
+	pioc->per = bits;		//Register enable
+	pioc->oer = bits;		//Output enable
 
 	//Disable leds that arent used
 	pioc->pdr = ~bits;
 }
 
-void LED_set_enabled( const int bits )
-{
+
+void LED_set_enabled( const BITFIELD bits ) {
 	pioc->codr = ~bits;
 	pioc->sodr = bits;
 }
+

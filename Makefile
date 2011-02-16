@@ -12,7 +12,6 @@ clean:
 
 #Do everyting
 all:
-		make compile
 		make upload
 		make debug
 		make clean
@@ -20,9 +19,10 @@ all:
 #Upload the binary to the microcontroller
 .PHONY: 	upload
 upload:		$(BINARY)
+		make compile
 		avr32program halt
 		sleep 3
-		avr32program program -f0,8Mb -e $(BINARY)
+		avr32program program -r -R -f0,8Mb -e $(BINARY)
 
 
 .PHONY: 	debug

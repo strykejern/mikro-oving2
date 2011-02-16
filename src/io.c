@@ -1,4 +1,4 @@
-#include "io.h"
+#include "../headers/io.h"
 
 //Input/Output control
 static volatile avr32_pio_t *piob = &AVR32_PIOB;	//Buttons

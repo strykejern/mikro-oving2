@@ -12,11 +12,12 @@ static volatile avr32_dac_t *pdac = &AVR32_DAC;		//Digital to Audio Converter
 static volatile avr32_sm_t *psm   = &AVR32_SM;		//Power Manager
 
 
+/** This function initializes the Digital to Audio converter **/
 void DAC_initialize() {
 	pdac->CR.en = true;
 }
 
-
+/** This function initializes the buttons **/
 void BUTTONS_initialize( const BITFIELD bits ) {
 	//Enable switches
 	piob->per = bits;		//Register enable
@@ -28,6 +29,7 @@ void BUTTONS_initialize( const BITFIELD bits ) {
 	piob->idr = ~bits;
 }
 
+/** This function initializes the LED lamps **/
 void LED_initialize( const BITFIELD bits ) {
 	//Enable LED
 	pioc->per = bits;		//Register enable
@@ -38,6 +40,7 @@ void LED_initialize( const BITFIELD bits ) {
 }
 
 
+/** Use this function to enable the LED specified in the BITFIELD **/
 void LED_set_enabled( const BITFIELD bits ) {
 	pioc->codr = ~bits;
 	pioc->sodr = bits;

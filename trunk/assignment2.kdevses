@@ -1,10 +1,13 @@
 <?xml version = '1.0' encoding = 'UTF-8'?>
 <!DOCTYPE KDevPrjSession>
 <KDevPrjSession>
- <DocsAndViews NumberOfDocuments="1" >
-  <Doc0 NumberOfViews="1" URL="file:///home/dmlab/johanja/Assignment2/src/assignment2.c" >
-   <View0 Encoding="" line="12" Type="Source" />
+ <DocsAndViews NumberOfDocuments="2" >
+  <Doc0 NumberOfViews="1" URL="file:///home/dmlab/johanja/mikro-oving2/src/io.c" >
+   <View0 Encoding="" line="17" Type="Source" />
   </Doc0>
+  <Doc1 NumberOfViews="1" URL="file:///home/dmlab/johanja/mikro-oving2/Makefile" >
+   <View0 Encoding="" line="10" Type="Source" />
+  </Doc1>
  </DocsAndViews>
  <pluginList>
   <kdevdebugger>

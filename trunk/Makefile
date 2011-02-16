@@ -4,7 +4,7 @@ BINARY = main.elf
 #Compiling phase
 compile: 	src/main.c src/io.c
 		avr32-gcc -Wall -g -c $^
-		avr32-gcc -o $(BINARY) main.o io.o
+		avr32-gcc -o $(BINARY) main.o io.o -lm
 
 #Cleanup object files and binaries
 clean:		

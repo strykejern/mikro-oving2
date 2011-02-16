@@ -1,6 +1,6 @@
-#include <stdlib.h>
 #include <avr32/ap7000.h>
 #include <sys/interrupts.h>
+#include <math.h>
 
 #include "../headers/typedef.h"
 #include "../headers/io.h"
@@ -81,33 +81,34 @@ void IO_initialize_interrupts()
 	init_interrupts();
 }
 
-static short sound = 0x60FB;
-static short limit = 100;
+static short amplitude = 0x60B4;
+static double frequency = 4<<8;
 
 __int_handler *piob_int_handler() 
 {
 	DEBOUNCE();
+	int buttons_pushed = piob->isr;
 
-	int status = piob->isr;
-
-	LED_set_enabled( status );
-	limit = status << 2;
+	if( buttons_pushed & 1 ) frequency = 0;
+	if( buttons_pushed & 128 ) frequency = rand();
 
 	return 0;
 }
 
 __int_handler *dac_int_handler() 
 {
-	static bool swap = false;
-	static int cycle = 1;
+	static double cycle = 0;
+	static short sound = 0;
 
 	cycle++;
-	if( cycle >= limit ) cycle = 1;
 
-	pdac->SDR.channel0 = swap ? -sound/cycle : sound/cycle;
-	pdac->SDR.channel1 = swap ? sound/cycle : -sound/cycle;
-	swap = !swap;
+	double result = sin(frequency*cycle);
+	sound = (amplitude * result);	
 
+	sound = 5.0 * sin(2.0*M_PI*2.0 * 4.0);
+	
+	pdac->SDR.channel0 = sound;
+	pdac->SDR.channel1 = sound;
 		
 	//Enable next interrupt
 	pdac->isr;

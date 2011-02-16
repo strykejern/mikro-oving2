@@ -6,6 +6,7 @@
 
 typedef uint32_t BITFIELD;
 
-//#SLEEP( TIME ) { int i; for( i = TIME; i--; }
+#define DEBOUNCE() SLEEP(10000)
+#define SLEEP( TIME ) { uint32_t i; for( i = TIME; i--; ); }
 
 #endif	/* TYPEDEF_HEADER_INCLUDED */

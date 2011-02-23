@@ -12,8 +12,10 @@ static volatile avr32_pio_t *pioc = &AVR32_PIOC;	//LED
 static volatile avr32_dac_t *pdac = &AVR32_DAC;		//Digital to Audio Converter
 static volatile avr32_sm_t *psm   = &AVR32_SM;		//Power Manager
 
+//Private functions
 __int_handler *piob_int_handler();
 __int_handler *dac_int_handler();
+void sine_wave():
 
 
 /** This function initializes the audio system we are using **/
@@ -22,9 +24,12 @@ void AUDIO_initialize()
 	//NOTE! Interrupts have to be initialized before this can work!
 
 	//Initialize clock frequency for output sound
-	psm->pm_gcctrl[6] = 12.288; //This value must be 256 times the frequency of the sample rate (48kHz = 12.288 MHz)
-	//0x0005
-
+//	psm->pm_gcctrl[6] = 12.288; //This value must be 256 times the frequency of the sample rate (48kHz = 12.288 MHz)
+	avr32_sm_pm_gcctrl_t  *clock =  &(psm->PM_GCCTRL[6]);
+	clock->cen = true;
+	clock->oscsel = 0; 	//20 MHz
+	
+	
 	//Setup PIO to use ABDAC
 	piob->PDR.p20 = true;		//We are no longer the controller
 	piob->PDR.p21 = true;
@@ -82,8 +87,8 @@ void IO_initialize_interrupts()
 	init_interrupts();
 }
 
-static short amplitude = 0x30B4;
-static double frequency = 261.63; //4<<8;
+static short amplitude = 0x10B4;
+static double frequency = 261.63;
 
 __int_handler *piob_int_handler() 
 {
@@ -91,26 +96,34 @@ __int_handler *piob_int_handler()
 	DEBOUNCE();
 	int buttons_pushed = piob->isr;
 
-	if( buttons_pushed & 1 ) frequency = 261.63;
-	if( buttons_pushed & 2 ) frequency = 293.66;
-	if( buttons_pushed & 4 ) frequency = 349.23;
+	if( buttons_pushed & 1 ) frequency = 261.63;	//C4
+	if( buttons_pushed & 2 ) frequency = 293.66;	//D4
+	if( buttons_pushed & 4 ) frequency = 349.23;	//F4
+	if( buttons_pushed & 8 ) frequency = 783.99;	//G5
+	if( buttons_pushed & 16) frequency = 1661.22;	//G#
 
 	return 0;
 }
 
 __int_handler *dac_int_handler() 
 {
+	sine_wave();
+		
+	//Enable next interrupt
+	pdac->isr;
+	return 0;
+}
+
+
+void sine_wave()
+{
 	//Interrupts for the digital to audio converter
 	static int sample = 0;
 	short sound = amplitude * sin(M_PI*2*frequency*sample);
 	
 	sample++;
-	sample %= 5;
+	sample %= 8;
 	
 	pdac->SDR.channel0 = sound;	//Left
 	pdac->SDR.channel1 = sound;	//Right
-		
-	//Enable next interrupt
-	pdac->isr;
-	return 0;
 }

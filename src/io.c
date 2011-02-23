@@ -22,7 +22,8 @@ void AUDIO_initialize()
 	//NOTE! Interrupts have to be initialized before this can work!
 
 	//Initialize clock frequency for output sound
-	psm->pm_gcctrl[6] = 0x0005; //todo: data
+	psm->pm_gcctrl[6] = 12.288; //This value must be 256 times the frequency of the sample rate (48kHz = 12.288 MHz)
+	//0x0005
 
 	//Setup PIO to use ABDAC
 	piob->PDR.p20 = true;		//We are no longer the controller
@@ -81,34 +82,33 @@ void IO_initialize_interrupts()
 	init_interrupts();
 }
 
-static short amplitude = 0x60B4;
-static double frequency = 4<<8;
+static short amplitude = 0x30B4;
+static double frequency = 261.63; //4<<8;
 
 __int_handler *piob_int_handler() 
 {
+	//Interrupts to the switches
 	DEBOUNCE();
 	int buttons_pushed = piob->isr;
 
-	if( buttons_pushed & 1 ) frequency = 0;
-	if( buttons_pushed & 128 ) frequency = rand();
+	if( buttons_pushed & 1 ) frequency = 261.63;
+	if( buttons_pushed & 2 ) frequency = 293.66;
+	if( buttons_pushed & 4 ) frequency = 349.23;
 
 	return 0;
 }
 
 __int_handler *dac_int_handler() 
 {
-	static double cycle = 0;
-	static short sound = 0;
-
-	cycle++;
-
-	double result = sin(frequency*cycle);
-	sound = (amplitude * result);	
-
-	sound = 5.0 * sin(2.0*M_PI*2.0 * 4.0);
+	//Interrupts for the digital to audio converter
+	static int sample = 0;
+	short sound = amplitude * sin(M_PI*2*frequency*sample);
 	
-	pdac->SDR.channel0 = sound;
-	pdac->SDR.channel1 = sound;
+	sample++;
+	sample %= 5;
+	
+	pdac->SDR.channel0 = sound;	//Left
+	pdac->SDR.channel1 = sound;	//Right
 		
 	//Enable next interrupt
 	pdac->isr;

@@ -18,6 +18,8 @@ __int_handler *dac_int_handler();
 void sine_wave();
 void square_wave();
 
+Song global_song;
+
 
 /** This function initializes the audio system we are using **/
 void AUDIO_initialize() 
@@ -107,9 +109,20 @@ __int_handler *piob_int_handler()
 }
 
 __int_handler *dac_int_handler() 
-{
-	square_wave(frequency);
-		
+{	
+	static int note_countdown = 0;
+
+	square_wave( global_song.data[global_song.current] );
+
+	//play next note?
+	if( note_countdown++ > 50000 )
+	{
+		//next note
+		note_countdown = 0;
+		global_song.current++;
+		global_song.current %= global_song.length;
+	}
+
 	//Enable next interrupt
 	pdac->isr;
 	return 0;

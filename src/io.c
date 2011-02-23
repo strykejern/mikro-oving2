@@ -122,7 +122,6 @@ __int_handler *piob_int_handler()
 }
 
 __int_handler *dac_int_handler() 
-<<<<<<< .mine
 {
 	
 	static int count = 0;
@@ -137,8 +136,6 @@ __int_handler *dac_int_handler()
 	}
 	
 	//square_wave(frequency);
-		
-=======
 {	
 	static int note_countdown = 0;
 
@@ -152,8 +149,6 @@ __int_handler *dac_int_handler()
 		global_song.current++;
 		global_song.current %= global_song.length;
 	}
-
->>>>>>> .r22
 	//Enable next interrupt
 	pdac->isr;
 	return 0;

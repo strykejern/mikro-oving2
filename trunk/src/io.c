@@ -27,7 +27,6 @@ void AUDIO_initialize()
 	//NOTE! Interrupts have to be initialized before this can work!
 
 	//Initialize clock frequency for output sound
-//	psm->pm_gcctrl[6] = 12.288; //This value must be 256 times the frequency of the sample rate (48kHz = 12.288 MHz)
 	volatile avr32_sm_pm_gcctrl_t  *clock =  &(psm->PM_GCCTRL[6]);
 	clock->cen = true;
 	clock->oscsel = 0; 	//20 MHz
@@ -125,7 +124,7 @@ __int_handler *dac_int_handler()
 	static int note_countdown = 0;
 
 	//play next note?
-	if( note_countdown++ > 10000 )
+	if( note_countdown++ > 50000 )
 	{
 		Song *psong = sound_get_song(0);
 		note_countdown = 0;

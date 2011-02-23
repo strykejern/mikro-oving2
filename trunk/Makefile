@@ -2,9 +2,9 @@
 BINARY = main.elf
 
 #Compiling phase
-compile: 	src/main.c src/io.c
+compile: 	src/main.c src/io.c src/sound.c
 		avr32-gcc -Wall -g -c $^
-		avr32-gcc -o $(BINARY) main.o io.o -lm
+		avr32-gcc -o $(BINARY) main.o io.o sound.o -lm
 
 #Cleanup object files and binaries
 clean:		

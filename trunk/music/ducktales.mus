@@ -1,0 +1,1 @@
+char ducktales_song[] = { 'C', 'B', 'C', 'D', 'C', 'B', 'C', 'D', 'C', 'D', 'C', 'B', 'A' }; 

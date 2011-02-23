@@ -4,6 +4,7 @@
 
 #include "../headers/typedef.h"
 #include "../headers/io.h"
+#include "../headers/sound.h"
 
 //Input/Output control
 static volatile avr32_pio_t *piob = &AVR32_PIOB;	//Buttons
@@ -18,8 +19,6 @@ __int_handler *dac_int_handler();
 __int_handler *rtc_int_handler();
 void sine_wave();
 void square_wave();
-
-Song global_song;
 
 
 /** This function initializes the audio system we are using **/
@@ -104,7 +103,7 @@ void IO_initialize_interrupts()
 }
 
 static short amplitude = 0x10B4;
-static int frequency = 300;
+static Note frequency = A;
 
 __int_handler *piob_int_handler() 
 {
@@ -112,30 +111,31 @@ __int_handler *piob_int_handler()
 	DEBOUNCE();
 	int buttons_pushed = piob->isr;
 
-	if( buttons_pushed & 1 ) frequency = 1;	//C4
-	if( buttons_pushed & 2 ) frequency = 50;	//D4
-	if( buttons_pushed & 4 ) frequency = 100;	//F4
-	if( buttons_pushed & 8 ) frequency = 150;	//G5
-	if( buttons_pushed & 16) frequency = 200;	//G#
+	if( buttons_pushed & 1 ) frequency = INVALID_NOTE;	//C4
+	if( buttons_pushed & 2 ) frequency = A;	//D4
+	if( buttons_pushed & 4 ) frequency = B;	//F4
+	if( buttons_pushed & 8 ) frequency = C;	//G5
+	if( buttons_pushed & 16) frequency = D;	//G#
 
 	return 0;
 }
 
 __int_handler *dac_int_handler() 
-{
-	
-	static int count = 0;
-	
-	count++;
-	if (count > 1000 && false){
-		count = 0;
-		psm->rtc_top += 1;
-		if (psm->rtc_top > 100){
-			psm->rtc_top = 1;
-		}
+{	
+	static int note_countdown = 0;
+
+	//play next note?
+	if( note_countdown++ > 10000 )
+	{
+		Song *psong = sound_get_song(0);
+		note_countdown = 0;
+
+		//next note
+		psong->current++;
+		psong->current %= psong->length;
+
+		psm->rtc_top = psong->data[psong->current];
 	}
-	
-	//square_wave(frequency);
 		
 	//Enable next interrupt
 	pdac->isr;
@@ -144,16 +144,16 @@ __int_handler *dac_int_handler()
 
 __int_handler *rtc_int_handler()
 {
-	static int flip = 1;
-	
+	static int flip = 1;	
 	flip *= -1;
 	
 	if ( flip == 1 ) LED_set_enabled( 0x1 );
 	else LED_set_enabled( 0x2 );
 	
-	square_wave(0);
-	
-	psm->rtc_icr = 1;
+	square_wave();
+
+	//Enable next interrupt
+	psm->rtc_icr = true;
 	return 0;
 }
 

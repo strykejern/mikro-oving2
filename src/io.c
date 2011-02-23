@@ -15,7 +15,8 @@ static volatile avr32_sm_t *psm   = &AVR32_SM;		//Power Manager
 //Private functions
 __int_handler *piob_int_handler();
 __int_handler *dac_int_handler();
-void sine_wave():
+void sine_wave();
+void square_wave();
 
 
 /** This function initializes the audio system we are using **/
@@ -25,7 +26,7 @@ void AUDIO_initialize()
 
 	//Initialize clock frequency for output sound
 //	psm->pm_gcctrl[6] = 12.288; //This value must be 256 times the frequency of the sample rate (48kHz = 12.288 MHz)
-	avr32_sm_pm_gcctrl_t  *clock =  &(psm->PM_GCCTRL[6]);
+	volatile avr32_sm_pm_gcctrl_t  *clock =  &(psm->PM_GCCTRL[6]);
 	clock->cen = true;
 	clock->oscsel = 0; 	//20 MHz
 	
@@ -88,7 +89,7 @@ void IO_initialize_interrupts()
 }
 
 static short amplitude = 0x10B4;
-static double frequency = 261.63;
+static int frequency = 300;
 
 __int_handler *piob_int_handler() 
 {
@@ -96,18 +97,18 @@ __int_handler *piob_int_handler()
 	DEBOUNCE();
 	int buttons_pushed = piob->isr;
 
-	if( buttons_pushed & 1 ) frequency = 261.63;	//C4
-	if( buttons_pushed & 2 ) frequency = 293.66;	//D4
-	if( buttons_pushed & 4 ) frequency = 349.23;	//F4
-	if( buttons_pushed & 8 ) frequency = 783.99;	//G5
-	if( buttons_pushed & 16) frequency = 1661.22;	//G#
+	if( buttons_pushed & 1 ) frequency = 1;	//C4
+	if( buttons_pushed & 2 ) frequency = 50;	//D4
+	if( buttons_pushed & 4 ) frequency = 100;	//F4
+	if( buttons_pushed & 8 ) frequency = 150;	//G5
+	if( buttons_pushed & 16) frequency = 200;	//G#
 
 	return 0;
 }
 
 __int_handler *dac_int_handler() 
 {
-	sine_wave();
+	square_wave(frequency);
 		
 	//Enable next interrupt
 	pdac->isr;
@@ -127,3 +128,36 @@ void sine_wave()
 	pdac->SDR.channel0 = sound;	//Left
 	pdac->SDR.channel1 = sound;	//Right
 }
+
+void square_wave(int frequency)
+{
+	static int wave = 1;
+	static int cycle = 0;
+	cycle++;
+	
+	if (cycle > frequency){
+		cycle = 0;
+		wave *= -1;
+	}
+	
+	pdac->SDR.channel0 = amplitude * wave;	//Left
+	pdac->SDR.channel1 = amplitude * wave;	//Right
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

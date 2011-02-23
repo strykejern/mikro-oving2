@@ -1,1 +1,9 @@
-char ducktales_song[] = { 'C', 'B', 'C', 'D', 'C', 'B', 'C', 'D', 'C', 'D', 'C', 'B', 'A' }; 
+char ducktales_song[] = { 
+
+//Verse 1
+'E', 'D', 'A', 'E', 'D', 'A', 'D', 'A', 'F', 'B', 'A', 'B',
+
+//Chorus
+'E', 'C', 'D', 'E', 'C', 'D', 'E'
+
+ }; 

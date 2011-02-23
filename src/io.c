@@ -65,7 +65,7 @@ void RTC_initialize()
 {
 	psm->RTC_CTRL.en = 1;
 	psm->RTC_CTRL.topen = 1;
-	psm->RTC_CTRL.psel = 1;
+	psm->RTC_CTRL.psel = 0;
 	psm->RTC_CTRL.pclr = 1;
 	psm->rtc_top = 1;
 	
@@ -102,19 +102,27 @@ void IO_initialize_interrupts()
 }
 
 static short amplitude = 0x10B4;
-static Note frequency = A;
+static unsigned int frequency = 1;
 
 __int_handler *piob_int_handler() 
 {
+	static bool push = false;
+
 	//Interrupts to the switches
 	DEBOUNCE();
 	int buttons_pushed = piob->isr;
 
-	if( buttons_pushed & 1 ) frequency = INVALID_NOTE;	//C4
-	if( buttons_pushed & 2 ) frequency = A;	//D4
-	if( buttons_pushed & 4 ) frequency = B;	//F4
-	if( buttons_pushed & 8 ) frequency = C;	//G5
-	if( buttons_pushed & 16) frequency = D;	//G#
+	if( push )
+	{
+		if( buttons_pushed & 1 ) frequency++;	
+		if( buttons_pushed & 2 ) frequency--;	
+	//	if( buttons_pushed & 4 ) frequency = B;	
+	//	if( buttons_pushed & 8 ) frequency = C;	
+	//	if( buttons_pushed & 16) frequency = D;
+	}
+
+	push = !push;
+	LED_set_enabled( frequency );
 
 	return 0;
 }
@@ -124,7 +132,7 @@ __int_handler *dac_int_handler()
 	static int note_countdown = 0;
 
 	//play next note?
-	if( note_countdown++ > 50000 )
+	if( note_countdown++ > 70000 )
 	{
 		Song *psong = sound_get_song(0);
 		note_countdown = 0;
@@ -143,12 +151,6 @@ __int_handler *dac_int_handler()
 
 __int_handler *rtc_int_handler()
 {
-	static int flip = 1;	
-	flip *= -1;
-	
-	if ( flip == 1 ) LED_set_enabled( 0x1 );
-	else LED_set_enabled( 0x2 );
-	
 	square_wave();
 
 	//Enable next interrupt

@@ -1,15 +1,17 @@
 #ifndef SOUND_HEADER_INCLUDED
 #define SOUND_HEADER_INCLUDED
 
-#define MAX_SONG_LENGTH 512
+#define MAX_SONG_LENGTH 64
 
 typedef enum note_enum
 {
 	INVALID_NOTE = -1,
-	A = 1,
-	B = 2,
-	C = 3,
-	D = 4
+	A = 1,		//Tone A = 73.179 Hz
+	B = 2,		//Tone B = 85.375 Hz
+	C = 3,		//Tone C = 97.572 Hz
+	D = 4,		//Tone D = 109.768 Hz
+	E = 5,		//Tone E = 121.965 Hz
+	F = 6		//Tone F = 134.161 Hz
 } Note;
 
 typedef struct song_struct

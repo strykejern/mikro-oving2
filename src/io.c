@@ -174,7 +174,7 @@ void sine_wave()
 void square_wave()
 {
 	static int wave = 1;
-	static boolean flip = true;
+	static bool flip = true;
 	
 	flip = !flip;
 	

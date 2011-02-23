@@ -7,7 +7,10 @@ int main( void )
 	BUTTONS_initialize( 0xFF );
 	LED_initialize( 0xFF );
 	IO_initialize_interrupts();
+	RTC_initialize();
 	AUDIO_initialize();
+	
+	LED_set_enabled( 0x8 );
 
         global_song.length = 7;
         global_song.data[0] = A;

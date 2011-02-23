@@ -15,6 +15,7 @@ static volatile avr32_sm_t *psm   = &AVR32_SM;		//Power Manager
 //Private functions
 __int_handler *piob_int_handler();
 __int_handler *dac_int_handler();
+__int_handler *rtc_int_handler();
 void sine_wave();
 void square_wave();
 
@@ -62,6 +63,17 @@ void BUTTONS_initialize( const BITFIELD bits )
 	piob->idr = ~bits;
 }
 
+void RTC_initialize()
+{
+	psm->RTC_CTRL.en = 1;
+	psm->RTC_CTRL.topen = 1;
+	psm->RTC_CTRL.psel = 1;
+	psm->RTC_CTRL.pclr = 1;
+	psm->rtc_top = 1;
+	
+	psm->rtc_ier = 1;
+}
+
 /** This function initializes the LED lamps **/
 void LED_initialize( const BITFIELD bits ) 
 {
@@ -86,7 +98,8 @@ void IO_initialize_interrupts()
 {
 	set_interrupts_base( (void *) AVR32_INTC_ADDRESS );
 	register_interrupt( (__int_handler)( piob_int_handler ), AVR32_PIOB_IRQ / 32, AVR32_PIOB_IRQ % 32, INT0 );
-	register_interrupt( (__int_handler)( dac_int_handler ), AVR32_DAC_IRQ / 32, AVR32_DAC_IRQ % 32, INT0 );
+	register_interrupt( (__int_handler)( dac_int_handler  ), AVR32_DAC_IRQ / 32,  AVR32_DAC_IRQ % 32,  INT0 );
+	register_interrupt( (__int_handler)( rtc_int_handler  ), AVR32_SM_RTC_IRQ / 32,  AVR32_SM_RTC_IRQ % 32,  INT1 );
 	init_interrupts();
 }
 
@@ -109,6 +122,23 @@ __int_handler *piob_int_handler()
 }
 
 __int_handler *dac_int_handler() 
+<<<<<<< .mine
+{
+	
+	static int count = 0;
+	
+	count++;
+	if (count > 1000 && false){
+		count = 0;
+		psm->rtc_top += 1;
+		if (psm->rtc_top > 100){
+			psm->rtc_top = 1;
+		}
+	}
+	
+	//square_wave(frequency);
+		
+=======
 {	
 	static int note_countdown = 0;
 
@@ -123,8 +153,24 @@ __int_handler *dac_int_handler()
 		global_song.current %= global_song.length;
 	}
 
+>>>>>>> .r22
 	//Enable next interrupt
 	pdac->isr;
+	return 0;
+}
+
+__int_handler *rtc_int_handler()
+{
+	static int flip = 1;
+	
+	flip *= -1;
+	
+	if ( flip == 1 ) LED_set_enabled( 0x1 );
+	else LED_set_enabled( 0x2 );
+	
+	square_wave(0);
+	
+	psm->rtc_icr = 1;
 	return 0;
 }
 
@@ -142,16 +188,14 @@ void sine_wave()
 	pdac->SDR.channel1 = sound;	//Right
 }
 
-void square_wave(int frequency)
+void square_wave()
 {
 	static int wave = 1;
-	static int cycle = 0;
-	cycle++;
+	static boolean flip = true;
 	
-	if (cycle > frequency){
-		cycle = 0;
-		wave *= -1;
-	}
+	flip = !flip;
+	
+	if (flip) wave *= -1;
 	
 	pdac->SDR.channel0 = amplitude * wave;	//Left
 	pdac->SDR.channel1 = amplitude * wave;	//Right

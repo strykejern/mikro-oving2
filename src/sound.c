@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "../headers/typedef.h"
 #include "../headers/sound.h"
 
@@ -7,11 +9,37 @@
 //Private functions
 static Song* parse_song( const char song_data[], const int array_size );
 static void add_one_note( Song* psong, const char note );
+static void precache_one_note( const Note frequency );
 
 //Private variables
 static Song* loaded_songs[8];
+static short note_cache[NOTE_COUNT][SAMPLE_RATE];
 
+void precache_one_note( const Note frequency )
+{
+	int sample, note = INVALID_NOTE;
 
+	//figure out note number
+	switch( frequency )
+	{
+		case A: note = 0; break;
+		case B: note = 1; break;
+		case C: note = 2; break;
+		case D: note = 3; break;
+		case E: note = 4; break;
+		case F: note = 5; break;
+		default: note = INVALID_NOTE; break;
+	}
+
+	//trap errors
+	if( note == INVALID_NOTE ) return;
+
+	//generate sine wave
+	for( sample = 0; sample < SAMPLE_RATE; sample++ )
+	{
+		note_cache[note][sample] = sin( 2*M_PI * frequency * sample ) / SAMPLE_RATE;
+	}
+}
 
 Song* parse_song( const char song_data[], const int array_size )
 {
@@ -49,6 +77,8 @@ void add_one_note( Song* psong, const char note )
 		case 'B': add_note = B; break;
 		case 'C': add_note = C; break;
 		case 'D': add_note = D; break;
+		case 'E': add_note = E; break;
+		case 'F': add_note = F; break;
 	}
 
 	//Did we succeed? If so, add the note to the song
@@ -58,6 +88,16 @@ void add_one_note( Song* psong, const char note )
 	}
 }
 
+/** This function preloads every sine wave generated note into memory for later use **/
+void sound_precache_all_notes()
+{
+	precache_one_note( A );
+	precache_one_note( B );
+	precache_one_note( C );
+	precache_one_note( D );
+	precache_one_note( E );
+	precache_one_note( F );
+}
 
 /** Load all songs into memory **/
 void sound_load_all_songs()
@@ -71,4 +111,27 @@ Song* sound_get_song( const int songnum )
 {
 	if( songnum < 0 || songnum >= 8 ) return NULL;
 	return loaded_songs[songnum];
+}
+
+/** Gets a loaded song from memory **/
+short sound_get_note_sample( Note frequency, int sample )
+{
+	int note = INVALID_NOTE;
+
+	//figure out note number
+	switch( frequency )
+	{
+		case A: note = 0; break;
+		case B: note = 1; break;
+		case C: note = 2; break;
+		case D: note = 3; break;
+		case E: note = 4; break;
+		case F: note = 5; break;
+		default: note = INVALID_NOTE; break;
+	}
+
+	//trap errors
+	if( note == INVALID_NOTE ) return 0;
+
+	return note_cache[note][sample];
 }

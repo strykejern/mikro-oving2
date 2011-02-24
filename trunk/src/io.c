@@ -1,10 +1,11 @@
 #include <avr32/ap7000.h>
 #include <sys/interrupts.h>
-#include <math.h>
 
 #include "../headers/typedef.h"
 #include "../headers/io.h"
 #include "../headers/sound.h"
+
+#include <math.h>	//TODO: REMOVE THIS LINE
 
 //Input/Output control
 static volatile avr32_pio_t *piob = &AVR32_PIOB;	//Buttons
@@ -102,7 +103,7 @@ void IO_initialize_interrupts()
 }
 
 static double amplitude = 0.25*65535; //0x10B4;
-static double frequency = 73.179;
+static double frequency = 1;
 
 __int_handler *piob_int_handler() 
 {
@@ -129,17 +130,18 @@ __int_handler *piob_int_handler()
 
 __int_handler *dac_int_handler() 
 {	
-/*	static int counter = 0;
+/*	static int sample = 0;
+	Song *psong = sound_get_song(0);
+	short sound;
 
-	counter += 1;
-	if( counter > psong->data[psong->current] )
-	{
-		counter = 0;
-		square_wave();
-	}*/
+	sound = sin( 2*M_PI * psong->data[psong->current] * sample ) / SAMPLE_RATE;
+//	sound = sound_get_note_sample( psong->data[psong->current], sample++ );
+	sample %= SAMPLE_RATE;
+	sound = A*sample;
 
-	sine_wave();
-		
+	pdac->SDR.channel0 = sound;	//Left
+	pdac->SDR.channel1 = sound;	//Right		
+*/
 	//Enable next interrupt
 	pdac->isr;
 	return 0;
@@ -147,7 +149,7 @@ __int_handler *dac_int_handler()
 
 __int_handler *rtc_int_handler()
 {
-	static int note_countdown = 0;
+/*	static int note_countdown = 0;
 
 	//play next note?
 	if( note_countdown++ > 8000 )
@@ -158,29 +160,14 @@ __int_handler *rtc_int_handler()
 		//next note
 		psong->current++;
 		psong->current %= psong->length;
-//		psm->rtc_top = psong->data[psong->current];
 	}
-
+*/
 
 	//Enable next interrupt
 	psm->rtc_icr = true;
 	return 0;
 }
 
-
-void sine_wave()
-{
-	//Interrupts for the digital to audio converter
-	static int cycle = 0;
-	double sample_rate = 1; //20000000;
-	short sound = amplitude * (sin( 2*M_PI * frequency * cycle ) / sample_rate);
-	
-	cycle++;
-	cycle %= 20000000;
-	
-	pdac->SDR.channel0 = sound;	//Left
-	pdac->SDR.channel1 = sound;	//Right
-}
 
 void square_wave()
 {

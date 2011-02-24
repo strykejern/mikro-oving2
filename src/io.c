@@ -101,8 +101,8 @@ void IO_initialize_interrupts()
 	init_interrupts();
 }
 
-static short amplitude = 0x10B4;
-static unsigned int frequency = 1;
+static double amplitude = 0.25*65535; //0x10B4;
+static double frequency = 73.179;
 
 __int_handler *piob_int_handler() 
 {
@@ -129,20 +129,16 @@ __int_handler *piob_int_handler()
 
 __int_handler *dac_int_handler() 
 {	
-	static int note_countdown = 0;
+/*	static int counter = 0;
 
-	//play next note?
-	if( note_countdown++ > 70000 )
+	counter += 1;
+	if( counter > psong->data[psong->current] )
 	{
-		Song *psong = sound_get_song(0);
-		note_countdown = 0;
+		counter = 0;
+		square_wave();
+	}*/
 
-		//next note
-		psong->current++;
-		psong->current %= psong->length;
-
-		psm->rtc_top = psong->data[psong->current];
-	}
+	sine_wave();
 		
 	//Enable next interrupt
 	pdac->isr;
@@ -151,7 +147,20 @@ __int_handler *dac_int_handler()
 
 __int_handler *rtc_int_handler()
 {
-	square_wave();
+	static int note_countdown = 0;
+
+	//play next note?
+	if( note_countdown++ > 8000 )
+	{
+		Song *psong = sound_get_song(0);
+		note_countdown = 0;
+
+		//next note
+		psong->current++;
+		psong->current %= psong->length;
+//		psm->rtc_top = psong->data[psong->current];
+	}
+
 
 	//Enable next interrupt
 	psm->rtc_icr = true;
@@ -162,11 +171,12 @@ __int_handler *rtc_int_handler()
 void sine_wave()
 {
 	//Interrupts for the digital to audio converter
-	static int sample = 0;
-	short sound = amplitude * sin(M_PI*2*frequency*sample);
+	static int cycle = 0;
+	double sample_rate = 1; //20000000;
+	short sound = amplitude * (sin( 2*M_PI * frequency * cycle ) / sample_rate);
 	
-	sample++;
-	sample %= 8;
+	cycle++;
+	cycle %= 20000000;
 	
 	pdac->SDR.channel0 = sound;	//Left
 	pdac->SDR.channel1 = sound;	//Right

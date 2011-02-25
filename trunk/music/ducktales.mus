@@ -1,3 +1,4 @@
+/*
 char ducktales_song[] = { 
 
 //Verse 1
@@ -7,3 +8,15 @@ char ducktales_song[] = {
 'E', 'C', 'D', 'E', 'C', 'D', 'E'
 
  }; 
+*/
+
+/*
+//Hey Jude
+char ducktales_song[] = { 
+
+//Verse 1
+'D', 'D', 'E', 'E', 'C', 'G', 'G', 'F', 'D', 'E', 'D', 'C', 'D', 'E', 'E', 'E', 'A', 'G', 'F', 'G', 'E', 'D',
+
+ }; 
+*/
+

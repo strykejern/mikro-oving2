@@ -2,18 +2,19 @@
 #include "../headers/io.h"
 #include "../headers/sound.h"
 		
+//This is where the program starts
 int main()
 {
-	sound_set_current_song(0);
-
-	//This is where the program starts
-	BUTTONS_initialize( 0xFF );
-	LED_initialize( 0xFF );
-	IO_initialize_interrupts();
-	AUDIO_initialize();
+	//Initialize various subsystems
+	BUTTONS_initialize( 0xFF );		//buttons
+	LED_initialize( 0xFF );			//LED lamps
+	IO_initialize_interrupts();		//interrupt controller
+	SOUND_initialize();			//sound sub-system
+	AUDIO_initialize();			//audio output controller
 
 	while( true )
 	{
+		//TODO: bad infinite loop!
 	}
 	
 	return EXIT_SUCCESS;

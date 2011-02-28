@@ -18,12 +18,9 @@ static volatile avr32_sm_t *psm   = &AVR32_SM;		//Power Manager
 //Private functions
 __int_handler *piob_int_handler();
 __int_handler *dac_int_handler();
-__int_handler *rtc_int_handler();
-void sine_wave();
-void square_wave();
 
-static double amplitude = 0.25; //0x10B4;
-static int frequency = A;
+//Private variables
+static int frequency = 0;
 
 __int_handler *piob_int_handler() 
 {
@@ -36,13 +33,13 @@ __int_handler *piob_int_handler()
 	//Only register on release, not on push down
 	if( button_release )
 	{
-		if( buttons_pushed & 1 ) frequency = A;	
-		if( buttons_pushed & 2 ) frequency = B;
-		if( buttons_pushed & 4 ) frequency = C;
-		if( buttons_pushed & 8 ) frequency = D;
-		if( buttons_pushed & 16 ) frequency = E;
-		if( buttons_pushed & 32 ) frequency = F;
-		if( buttons_pushed & 64 ) frequency = G;
+		if( buttons_pushed & 1 ) SOUND_set_current_song(0);	
+		if( buttons_pushed & 2 ) SOUND_set_current_song(1);
+		if( buttons_pushed & 4 ) SOUND_set_current_song(2);
+		if( buttons_pushed & 8 ) SOUND_set_current_song(3);
+		if( buttons_pushed & 16 ) SOUND_set_current_song(4);
+		if( buttons_pushed & 32 ) SOUND_set_current_song(5);
+		if( buttons_pushed & 64 ) SOUND_set_current_song(6);
 	}
 
 	button_release = !button_release;
@@ -52,24 +49,30 @@ __int_handler *piob_int_handler()
 
 __int_handler *dac_int_handler() 
 {	
+	static short amplitude = SHRT_MAX/4;	//25% volume
 	static int freq_clock = 0;
-	static short wave = SHRT_MAX;
 	static int note_length = 0;
 
-	//Change note?
+	//Change to next note?
 	note_length++;
 	if( note_length >= 15000 )
 	{
-		Song *psong = sound_get_current_song(0);
+		Song *psong = SOUND_get_current_song(0);
+		Note current_note;
 		int note;
+
+		//Reset counter
 		note_length = 0;
 
 		//get next note
-		if( psong->current++ >= psong->length-1 ) psong->current = 0;
-		frequency = psong->data[psong->current];
+		if( psong->offset++ >= psong->length-1 ) psong->offset = 0;
+		current_note = (Note) *(psong->array_start + psong->offset);
+
+		//transform note to frequency
+		frequency = SOUND_get_note_frequency( current_note );
 
 		//Display LED for which note we are playing
-		switch( frequency )
+		switch( current_note )
 		{
 			case A: note = 1; break;
 			case B: note = 2; break;
@@ -78,36 +81,27 @@ __int_handler *dac_int_handler()
 			case E: note = 16; break;
 			case F: note = 32; break;
 			case G: note = 64; break;
-			default: note = SILENCE; break;
+			default: note = 0; break;
 		}
 		LED_set_enabled( note );
 	}
 
+	//Do we have something to play?
 	if( frequency != SILENCE )
-	{
-		//TODO: move this calculation to a loopkup table?
-		int clock_time = ( 12000000LL / 256LL ) / frequency;		// (12MHz / 256) / frequency
-	
+	{	
 		//Play square wave
-		if( freq_clock++ >= clock_time )
+		if( freq_clock++ >= frequency )
 		{
 			freq_clock = 0;
-			wave = -wave;
+			amplitude = -amplitude;
 		}
 	
-		pdac->SDR.channel0 = wave;	//Left
-		pdac->SDR.channel1 = wave;	//Right
+		pdac->SDR.channel0 = amplitude;	//Left
+		pdac->SDR.channel1 = amplitude;	//Right
 	}
 
 	//Enable next interrupt
 	pdac->isr;
-	return 0;
-}
-
-__int_handler *rtc_int_handler()
-{
-	//Enable next interrupt
-	psm->rtc_icr = true;
 	return 0;
 }
 
@@ -186,7 +180,6 @@ void IO_initialize_interrupts()
 	set_interrupts_base( (void *) AVR32_INTC_ADDRESS );
 	register_interrupt( (__int_handler)( piob_int_handler ), AVR32_PIOB_IRQ / 32, AVR32_PIOB_IRQ % 32, INT0 );
 	register_interrupt( (__int_handler)( dac_int_handler  ), AVR32_DAC_IRQ / 32,  AVR32_DAC_IRQ % 32,  INT0 );
-	//register_interrupt( (__int_handler)( rtc_int_handler  ), AVR32_SM_RTC_IRQ / 32,  AVR32_SM_RTC_IRQ % 32,  INT1 );
 	init_interrupts();
 }
 

@@ -14,6 +14,6 @@ typedef uint32_t BITFIELD;
 #define SLEEP( TIME ) { uint32_t i; for( i = TIME; i--; ); }
 
 //Macro to get array length
-#define ARRAY_SIZE( ARRAY )	( sizeof( ARRAY ) / ARRAY[0] )
+#define ARRAY_SIZE( ARRAY )	( sizeof( ARRAY ) / sizeof( ARRAY[0] ) )
 
 #endif	/* TYPEDEF_HEADER_INCLUDED */

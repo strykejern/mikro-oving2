@@ -84,7 +84,12 @@ void RTC_initialize()
 	RTC_set_interrupt_enabled( true );
 
 	//How fast is the audio sample supposed to be played?
-        psm->rtc_top = 1200;
+	RTC_set_top( 1200 );
+}
+
+void RTC_set_top( int top )
+{
+	psm->rtc_top = top;
 }
 
 /** Enable or disable Real Time Counter interrupts **/

@@ -6,8 +6,32 @@
 
 //Music files
 Note sample_song[] = { 
-A, B, C, D, E, SILENCE, E, F, SILENCE, F, SILENCE, F, E, D, SILENCE, D, SILENCE, D, E, SILENCE, E, B, SILENCE, B, SILENCE, B, A, SILENCE
+ C,X,
+ D,X,
+ E,X,
+ F,X,
+ G,G,X,
+ G,G,X,
+ A,X,
+ A,X,
+ A,X,
+ A,X,
+ G,G,G,X,
+ F,X,
+ F,X,
+ F,X,
+ F,X,
+ E,E,X,
+ E,E,X,
+ D,X,
+ D,X,
+ D,X,
+ D,X,
+ C,C,C,C,X
  };
+
+
+
 
 Note ducktales_song[] = { 
 
@@ -28,8 +52,8 @@ D, D, E, E, C, G, G, F, D, E, D, C, D, E, E, E, A, G, F, G, E, D, SILENCE
 
 
 Note test_song[] = { 
- C, SILENCE, C, SILENCE, C, B, B, B, SILENCE, B, SILENCE, B, SILENCE, B, A, A, A,
- C, SILENCE, C, SILENCE, C, B, B, B, A, A, D, E, D, E, F, E, D, C, SILENCE
+ C, X, C, X, C, B, B, B, X, B, X, B, X, B, A, A, A,
+ C, X, C, X, C, B, B, B, A, A, D, E, D, E, F, E, D, C
  }; 
 
 //Private variables
@@ -37,7 +61,7 @@ static int current_song;
 static int note_precache[NOTE_NUM];
 static Song audio_list[8];
 
-static Note current_note = SILENCE;	//Current note being played (SILENCE if there is none)
+static Note current_note = X;	//Current note being played (X if there is none)
 static WAVE_MODE wave_mode = SQUARE;
 
 static short amplitude = SHRT_MAX/4;	//25% volume
@@ -46,7 +70,6 @@ static short amplitude = SHRT_MAX/4;	//25% volume
 void precache_notes();
 short square_wave();
 short triangle_wave();
-short sine_wave();
 
 /** Reset and set the current song **/
 bool SOUND_set_current_song( const int songnum )
@@ -145,11 +168,10 @@ void SOUND_set_sound_mode( WAVE_MODE mode )
 short SOUND_get_next_sample()
 {
 	//Do we have something to play?
-	if( current_note == SILENCE ) return 0;
+	if( current_note == X ) return 0;
 
 	if( wave_mode == TRIANGLE ) return triangle_wave();
 	if( wave_mode == SQUARE   ) return square_wave();
-	if( wave_mode == SINE	  ) return sine_wave();
 
 	//No sound
 	return 0;
@@ -199,30 +221,15 @@ short triangle_wave()
 	return (cycle * (int)amplitude * 4) / note;
 }
 
-short sine_wave()
-{
-	static int freq_clock = 0;
-	static bool rising = false;
-
-	//Play square wave
-	if( freq_clock++ >= note_precache[current_note] )
-	{
-		freq_clock = 0;
-		rising = !rising;
-	}
-
-	return rising ? amplitude : -amplitude;
-}
-
 /** Precache note frequencies in a lookup table so we don't have to recalculate these each interrupt**/
 void precache_notes()
 {
-	//Octave 4 notes
-	note_precache[A] = ( 12000000LL / 256LL ) / 440;
-	note_precache[B] = ( 12000000LL / 256LL ) / 494;
+	//Octave 0 notes
 	note_precache[C] = ( 12000000LL / 256LL ) / 523;
 	note_precache[D] = ( 12000000LL / 256LL ) / 587;
 	note_precache[E] = ( 12000000LL / 256LL ) / 659;
-	note_precache[F] = ( 12000000LL / 256LL ) / 784;
-	note_precache[G] = ( 12000000LL / 256LL ) / 880;
+	note_precache[F] = ( 12000000LL / 256LL ) / 698;
+	note_precache[G] = ( 12000000LL / 256LL ) / 784;
+	note_precache[A] = ( 12000000LL / 256LL ) / 880;
+	note_precache[B] = ( 12000000LL / 256LL ) / 988;
 }

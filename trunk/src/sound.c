@@ -40,6 +40,7 @@ static Note current_note = SILENCE;	//Current note being played (SILENCE if ther
 
 //Private functions
 void precache_notes();
+short triangle_wave();
 
 /** Reset and set the current song **/
 bool SOUND_set_current_song( const int songnum )
@@ -136,6 +137,24 @@ short SOUND_get_next_sample()
 
 	//No sound
 	return 0;
+}
+
+short triangle_wave()
+{
+	static int cycle = 0;
+	static bool rising = true;
+	
+	if (rising)
+	{
+		cycle++;
+		if (cycle >= note_precache[current_note]) rising = false;
+	}
+	else
+	{
+		cycle--;
+		if (cycle <= note_precache[current_note]) rising = true;
+	}
+	
 }
 
 /** Precache note frequencies in a lookup table so we don't have to recalculate these each interrupt**/

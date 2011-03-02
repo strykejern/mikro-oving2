@@ -13,7 +13,6 @@ int main()
 	LED_initialize( 0xFF );			//LED lamps
 	IO_initialize_interrupts();		//interrupt controller
 	SOUND_initialize();			//sound sub-system
-	RTC_initialize();
 	DAC_initialize();			//audio output controller
 	
 	while( true )

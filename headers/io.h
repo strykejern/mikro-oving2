@@ -8,8 +8,7 @@ void IO_initialize_interrupts();
 void LED_initialize( const BITFIELD bits );
 void LED_set_enabled( const BITFIELD bits );
 
-void RTC_initialize();
-void RTC_set_interrupt_enabled( bool enable );
+void RTC_set_enabled( bool enable );
 void RTC_set_top( int top );
 
 void DAC_initialize();

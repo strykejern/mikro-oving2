@@ -46,6 +46,7 @@ static short amplitude = SHRT_MAX/4;	//25% volume
 void precache_notes();
 short square_wave();
 short triangle_wave();
+short sine_wave();
 
 /** Reset and set the current song **/
 bool SOUND_set_current_song( const int songnum )
@@ -90,7 +91,7 @@ void SOUND_progress_tracker()
 
 	//Change to next note?
 	note_length++;
-	if( note_length >= 15000 )
+	if( note_length >= 150 )
 	{
 		BITFIELD bits;
 		Song *psong = &audio_list[current_song];		
@@ -134,6 +135,7 @@ short SOUND_get_next_sample()
 
 	if( wave_mode == TRIANGLE ) return triangle_wave();
 	if( wave_mode == SQUARE   ) return square_wave();
+	if( wave_mode == SINE	  ) return sine_wave();
 
 	//No sound
 	return 0;
@@ -159,18 +161,43 @@ short triangle_wave()
 	static int cycle = 0;
 	static bool rising = true;
 	
+	int note = note_precache[current_note]>>1;
+	
 	if (rising)
 	{
 		cycle++;
-		if (cycle >= note_precache[current_note]) rising = false;
+		if (cycle >= note)
+		{
+			rising = false;
+			cycle = note;
+		}
 	}
 	else
 	{
 		cycle--;
-		if (cycle <= -note_precache[current_note]) rising = true;
+		if (cycle <= -note)
+		{
+			rising = true;
+			cycle = -note;
+		}
 	}
 	
-	return (cycle * (int)amplitude) / note_precache[current_note];
+	return (cycle * (int)amplitude * 4) / note;
+}
+
+short sine_wave()
+{
+	static int freq_clock = 0;
+	static bool rising = false;
+
+	//Play square wave
+	if( freq_clock++ >= note_precache[current_note] )
+	{
+		freq_clock = 0;
+		rising = !rising;
+	}
+
+	return rising ? amplitude : -amplitude;
 }
 
 /** Precache note frequencies in a lookup table so we don't have to recalculate these each interrupt**/

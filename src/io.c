@@ -16,8 +16,9 @@ static volatile avr32_sm_t *psm   = &AVR32_SM;		//Power Manager
 //Private functions
 __int_handler *piob_int_handler();
 __int_handler *dac_int_handler();
+__int_handler *rtc_int_handler();
 
-
+/** PIOB interrupt (buttons) **/
 __int_handler *piob_int_handler() 
 {
 	static bool button_release = false;
@@ -44,6 +45,7 @@ __int_handler *piob_int_handler()
 	return 0;
 }
 
+/** Digital to Analog Converter interrupt **/
 __int_handler *dac_int_handler() 
 {	
 	short sound_data = SOUND_get_next_sample();
@@ -59,8 +61,34 @@ __int_handler *dac_int_handler()
 	return 0;
 }
 
-/** This function initializes the audio system we are using **/
-void AUDIO_initialize() 
+/** Real Time Counter clock interrupt **/
+__int_handler *rtc_int_handler()
+{	
+	//progress the tracker
+	SOUND_progress_tracker();
+
+	//end interrupt
+        psm->rtc_icr = true;
+        return 0;
+}
+
+/** Initialize the RTC clock **/
+void RTC_initialize()
+{
+	//Enable the clock
+        psm->RTC_CTRL.en = true;
+        psm->RTC_CTRL.topen = true;
+        psm->RTC_CTRL.psel = true;
+        psm->RTC_CTRL.pclr = true;
+        psm->rtc_top = 1200;		//How fast is the audio sample supposed to be played?
+
+	//Enable interrupts
+        psm->rtc_ier = true;
+}
+
+
+/** This function initializes the digital to audio converter we are using **/
+void DAC_initialize() 
 {
 	//NOTE! Interrupts have to be initialized before this can work!
 
@@ -124,6 +152,7 @@ void IO_initialize_interrupts()
 	set_interrupts_base( (void *) AVR32_INTC_ADDRESS );
 	register_interrupt( (__int_handler)( piob_int_handler ), AVR32_PIOB_IRQ / 32, AVR32_PIOB_IRQ % 32, INT0 );
 	register_interrupt( (__int_handler)( dac_int_handler  ), AVR32_DAC_IRQ / 32,  AVR32_DAC_IRQ % 32,  INT0 );
+	register_interrupt( (__int_handler)( rtc_int_handler  ), AVR32_SM_RTC_IRQ / 32,  AVR32_SM_RTC_IRQ % 32,  INT1 );
 	init_interrupts();
 }
 

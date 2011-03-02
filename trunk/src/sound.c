@@ -155,6 +155,7 @@ short triangle_wave()
 		if (cycle <= note_precache[current_note]) rising = true;
 	}
 	
+	return (cycle * (int)amplitude) / note_precache[current_note];
 }
 
 /** Precache note frequencies in a lookup table so we don't have to recalculate these each interrupt**/

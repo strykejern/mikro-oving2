@@ -47,10 +47,15 @@ typedef struct song_struct
 } Song;
 
 /** Function prototypes, these are "Public" functions **/
-bool SOUND_set_current_song( const int songnum );
-short SOUND_get_next_sample();
 void SOUND_initialize();
-void SOUND_progress_tracker();
 void SOUND_set_sound_mode( WAVE_MODE mode );
+bool SOUND_set_current_song( const int songnum );
+
+void SOUND_progress_tracker();
+short SOUND_get_next_sample();
+
+void SOUND_stop();
+void SOUND_play();
+void SOUND_pause();
 
 #endif	/* SOUND_HEADER_INCLUDED */

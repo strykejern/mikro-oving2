@@ -30,7 +30,12 @@ __int_handler *piob_int_handler()
 	//Only register on release, not on push down
 	if( button_release )
 	{
-		if( buttons_pushed & 1 ) SOUND_set_current_song(0);	
+		static bool pause = false;
+		if( buttons_pushed & 1 )
+		{
+			pause = !pause;
+			if(pause) SOUND_pause(); else SOUND_play();
+		}
 		if( buttons_pushed & 2 ) SOUND_set_current_song(1);
 		if( buttons_pushed & 4 ) SOUND_set_current_song(2);
 		if( buttons_pushed & 8 ) SOUND_set_current_song(3);
@@ -75,15 +80,30 @@ __int_handler *rtc_int_handler()
 /** Initialize the RTC clock **/
 void RTC_initialize()
 {
-	//Enable the clock
-        psm->RTC_CTRL.en = true;
-        psm->RTC_CTRL.topen = true;
-        psm->RTC_CTRL.psel = true;
-        psm->RTC_CTRL.pclr = true;
-        psm->rtc_top = 1200;		//How fast is the audio sample supposed to be played?
+	//Enable interrupts
+	RTC_set_interrupt_enabled( true );
+
+	//How fast is the audio sample supposed to be played?
+        psm->rtc_top = 1200;
+}
+
+/** Enable or disable Real Time Counter interrupts **/
+void RTC_set_interrupt_enabled( bool enable )
+{
+        psm->RTC_CTRL.en = enable;
+        psm->RTC_CTRL.psel = enable;
+        psm->RTC_CTRL.pclr = enable;
+	psm->RTC_CTRL.topen = enable;
 
 	//Enable interrupts
-        psm->rtc_ier = true;
+	psm->rtc_ier = enable;
+}
+
+/** Enable or disable sound output **/
+void DAC_set_interrupt_enabled( bool enable )
+{
+	pdac->CR.en = enable;
+	pdac->IER.tx_ready = enable;
 }
 
 
@@ -104,9 +124,8 @@ void DAC_initialize()
 	piob->ASR.p21 = true;
 
 
-	//Enable the Digital to Audio Converter (DAC)
-	pdac->CR.en = true;
-	pdac->IER.tx_ready = true;
+	//Enable the Digital to Audio Converter (DAC) interrupts
+	DAC_set_interrupt_enabled( true );
 
 	//Now we simply write audio samples to: pdac->SDR
 }

@@ -6,7 +6,7 @@
 
 //Music files
 Note sample_song[] = { 
-A, B, C, D, E, SILENCE, E, F, SILENCE, F, SILENCE, F, E, D, SILENCE, D, SILENCE, D, E, SILENCE, E, B, SILENCE, B, SILENCE, B, A,
+A, B, C, D, E, SILENCE, E, F, SILENCE, F, SILENCE, F, E, D, SILENCE, D, SILENCE, D, E, SILENCE, E, B, SILENCE, B, SILENCE, B, A, SILENCE
  };
 
 Note ducktales_song[] = { 
@@ -15,21 +15,21 @@ Note ducktales_song[] = {
 E, D, A, E, D, A, D, A, F, B, A, B,
 
 //Chorus
-E, C, D, E, C, D, E
+E, C, D, E, C, D, E, SILENCE
 
  }; 
 
 Note beatles_song[] = { 
 
 //Verse 1
-D, D, E, E, C, G, G, F, D, E, D, C, D, E, E, E, A, G, F, G, E, D
+D, D, E, E, C, G, G, F, D, E, D, C, D, E, E, E, A, G, F, G, E, D, SILENCE
 
  }; 
 
 
 Note test_song[] = { 
  C, SILENCE, C, SILENCE, C, B, B, B, SILENCE, B, SILENCE, B, SILENCE, B, A, A, A,
- C, SILENCE, C, SILENCE, C, B, B, B, A, A, D, E, D, E, F, E, D, C
+ C, SILENCE, C, SILENCE, C, B, B, B, A, A, D, E, D, E, F, E, D, C, SILENCE
  }; 
 
 //Private variables
@@ -56,6 +56,8 @@ bool SOUND_set_current_song( const int songnum )
 
 	current_song = songnum;
 	audio_list[current_song].offset = 0;
+
+	SOUND_play();
 
 	return true;
 }
@@ -84,14 +86,39 @@ void SOUND_initialize()
 	SOUND_set_current_song(0);
 }
 
+void SOUND_pause()
+{
+//	DAC_set_interrupt_enabled(false);
+	RTC_set_interrupt_enabled(false);
+}
+
+void SOUND_play()
+{
+//	DAC_set_interrupt_enabled(true);
+	RTC_set_interrupt_enabled(true);
+}
+
+void SOUND_stop()
+{
+//	DAC_set_interrupt_enabled(false);
+	RTC_set_interrupt_enabled(false);
+	audio_list[current_song].offset = 0;
+}
+
 /** This function progresses a song to the next note **/
 void SOUND_progress_tracker()
 {
 	BITFIELD bits;
 	Song *psong = &audio_list[current_song];		
 
+	//end of audio?
+	if( psong->offset++ >= psong->length-1 )
+	{
+		SOUND_stop();
+		return;
+	}
+
 	//get next note
-	if( psong->offset++ >= psong->length-1 ) psong->offset = 0;
 	current_note = (Note) *(psong->array_start + psong->offset);
 
 	//Display LED for which note we are playing

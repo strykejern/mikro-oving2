@@ -5,7 +5,7 @@
 #include "../headers/io.h"
 
 //Music files
-Note sample_song[] = { 
+int sample_song[] = { 
  C,X,
  D,X,
  E,X,
@@ -33,17 +33,25 @@ Note sample_song[] = {
 
 
 
-Note ducktales_song[] = { 
+int ducktales_song[] = { 
 
 //Verse 1
-E, D, A, E, D, A, D, A, F, B, A, B,
+E, 1200,
+D, 1200,
+A, 1200,
+E, 1200,
+D, 1200,
+A, 1200,
+D, 1200,
+A, 1200,
+F, 1200,
+B, 1200,
+A, 1200,
+B, 1200
 
-//Chorus
-E, C, D, E, C, D, E, SILENCE
+}; 
 
- }; 
-
-Note beatles_song[] = { 
+int beatles_song[] = { 
 
 //Verse 1
 D, D, E, E, C, G, G, F, D, E, D, C, D, E, E, E, A, G, F, G, E, D, SILENCE
@@ -51,7 +59,7 @@ D, D, E, E, C, G, G, F, D, E, D, C, D, E, E, E, A, G, F, G, E, D, SILENCE
  }; 
 
 
-Note test_song[] = { 
+int test_song[] = { 
  C, X, C, X, C, B, B, B, X, B, X, B, X, B, A, A, A,
  C, X, C, X, C, B, B, B, A, A, D, E, D, E, F, E, D, C
  }; 
@@ -136,12 +144,18 @@ void SOUND_progress_tracker()
 	BITFIELD bits;
 	Song *psong = &audio_list[current_song];		
 
+	//Progress to next note
+	psong->offset += 2;
+
 	//end of audio?
-	if( psong->offset++ >= psong->length-1 )
+	if( psong->offset >= psong->length-1 )
 	{
 		SOUND_stop();
 		return;
 	}
+
+	//Set the duration of this note
+	RTC_set_top( (int) *(psong->array_start + psong->offset + 1) );
 
 	//get next note
 	current_note = (Note) *(psong->array_start + psong->offset);

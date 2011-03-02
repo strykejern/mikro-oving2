@@ -43,7 +43,7 @@ typedef struct song_struct
 {
 	int length;			//actual length of the song
 	int offset;			//current position in the song
-	Note *array_start;		//pointer to array start
+	int *array_start;		//pointer to array start
 } Song;
 
 /** Function prototypes, these are "Public" functions **/

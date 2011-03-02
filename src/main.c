@@ -1,8 +1,10 @@
 #include "../headers/typedef.h"
 #include "../headers/io.h"
 #include "../headers/sound.h"
-		
-//This is where the program starts
+
+void sleep();
+
+/** This is where the program starts **/
 int main()
 {
 	//Initialize various subsystems
@@ -14,9 +16,16 @@ int main()
 
 	while( true )
 	{
-		//TODO: bad infinite loop!
+		sleep();
 		//SOUND_progress_tracker();
 	}
 	
 	return EXIT_SUCCESS;
+}
+
+/** This function sets the CPU into idle mode, stopping the main flow of the program until a interrupt happens **/
+void sleep()
+{
+	//We need to use inline assembly to access this function
+	asm( "SLEEP 0" );
 }

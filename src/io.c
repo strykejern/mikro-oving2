@@ -35,7 +35,8 @@ __int_handler *piob_int_handler()
 		if( buttons_pushed & 8 ) SOUND_set_current_song(3);
 		if( buttons_pushed & 16 ) SOUND_set_current_song(4);
 		if( buttons_pushed & 32 ) SOUND_set_current_song(5);
-		if( buttons_pushed & 64 ) SOUND_set_current_song(6);
+		if( buttons_pushed & 64 ) SOUND_set_sound_mode(SQUARE);
+		if( buttons_pushed & 128 ) SOUND_set_sound_mode(TRIANGLE);
 	}
 
 	button_release = !button_release;

@@ -15,6 +15,13 @@ typedef enum note_enum
 } Note;
 */
 
+typedef enum wave_mode_enum
+{
+	TRIANGLE = 0,
+	SQUARE
+} WAVE_MODE;
+
+
 typedef enum note_enum
 {
 	A = 0,	
@@ -43,5 +50,6 @@ bool SOUND_set_current_song( const int songnum );
 short SOUND_get_next_sample();
 void SOUND_initialize();
 void SOUND_progress_tracker();
+void SOUND_set_sound_mode( WAVE_MODE mode );
 
 #endif	/* SOUND_HEADER_INCLUDED */

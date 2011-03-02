@@ -36,10 +36,15 @@ Note test_song[] = {
 static int current_song;
 static Note note_precache[NOTE_NUM];
 static Song audio_list[8];
+
 static Note current_note = SILENCE;	//Current note being played (SILENCE if there is none)
+static WAVE_MODE wave_mode = SQUARE;
+
+static short amplitude = SHRT_MAX/4;	//25% volume
 
 //Private functions
 void precache_notes();
+short square_wave();
 short triangle_wave();
 
 /** Reset and set the current song **/
@@ -113,30 +118,40 @@ void SOUND_progress_tracker()
 	}
 }
 
+void SOUND_set_sound_mode( WAVE_MODE mode )
+{
+	wave_mode = mode;
+}
+
 /** This function gets the next audio sample **/
 short SOUND_get_next_sample()
 {
-	static short amplitude = SHRT_MAX/4;	//25% volume
-	static int freq_clock = 0;
-
+	//TODO: move this function to RTC
 	SOUND_progress_tracker();
 
 	//Do we have something to play?
-	if( current_note != SILENCE )
-	{	
-		//Play square wave
-		if( freq_clock++ >= note_precache[current_note] )
-		{
-			freq_clock = 0;
-			amplitude = -amplitude;
-		}
-	
-		//Sound
-		return amplitude;
-	}
+	if( current_note == SILENCE ) return 0;
+
+	if( wave_mode == TRIANGLE ) return triangle_wave();
+	if( wave_mode == SQUARE   ) return square_wave();
 
 	//No sound
 	return 0;
+}
+
+short square_wave()
+{
+	static int freq_clock = 0;
+	static bool rising = false;
+
+	//Play square wave
+	if( freq_clock++ >= note_precache[current_note] )
+	{
+		freq_clock = 0;
+		rising = !rising;
+	}
+
+	return rising ? amplitude : -amplitude;
 }
 
 short triangle_wave()
@@ -152,7 +167,7 @@ short triangle_wave()
 	else
 	{
 		cycle--;
-		if (cycle <= note_precache[current_note]) rising = true;
+		if (cycle <= -note_precache[current_note]) rising = true;
 	}
 	
 	return (cycle * (int)amplitude) / note_precache[current_note];

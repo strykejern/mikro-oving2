@@ -15,6 +15,7 @@ int main()
 	while( true )
 	{
 		//TODO: bad infinite loop!
+		//SOUND_progress_tracker();
 	}
 	
 	return EXIT_SUCCESS;

@@ -4,30 +4,53 @@
 #include "../headers/sound.h"
 #include "../headers/io.h"
 
+
 //Music files
 int sample_song[] = { 
- C,X,
- D,X,
- E,X,
- F,X,
- G,G,X,
- G,G,X,
- A,X,
- A,X,
- A,X,
- A,X,
- G,G,G,X,
- F,X,
- F,X,
- F,X,
- F,X,
- E,E,X,
- E,E,X,
- D,X,
- D,X,
- D,X,
- D,X,
- C,C,C,C,X
+ X, 500,
+ C, 2400,
+ X, 500,
+ D, 2400,
+ X, 500,
+ E, 2400,
+ X, 500,
+ F, 2400,
+ X, 500,
+ G, 4800,
+ X, 500,
+ G, 4800,
+ X, 500,
+ A, 2400,
+ X, 500,
+ A, 2400,
+ X, 500,
+ A, 2400,
+ X, 500,
+ A, 2400,
+ X, 500,
+ G, 6000,
+ X, 500,
+ F, 2400,
+ X, 500,
+ F, 2400,
+ X, 500,
+ F, 2400,
+ X, 500,
+ F, 2400,
+ X, 500,
+ E, 4800,
+ X, 500,
+ E, 4800,
+ X, 500,
+ D, 2400,
+ X, 500,
+ D, 2400,
+ X, 500,
+ D, 2400,
+ X, 500,
+ D, 2400,
+ X, 500,
+ C, 10000
  };
 
 
@@ -53,8 +76,7 @@ B, 1200
 
 int beatles_song[] = { 
 
-//Verse 1
-D, D, E, E, C, G, G, F, D, E, D, C, D, E, E, E, A, G, F, G, E, D, SILENCE
+ 
 
  }; 
 
@@ -151,6 +173,7 @@ void SOUND_progress_tracker()
 	if( psong->offset >= psong->length-1 )
 	{
 		SOUND_stop();
+		//psong->offset = 0;
 		return;
 	}
 
@@ -159,7 +182,7 @@ void SOUND_progress_tracker()
 
 	//get next note
 	current_note = (Note) *(psong->array_start + psong->offset);
-
+	
 	//Display LED for which note we are playing
 	switch( current_note )
 	{

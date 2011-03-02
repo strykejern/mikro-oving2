@@ -1,20 +1,9 @@
 #ifndef SOUND_HEADER_INCLUDED
 #define SOUND_HEADER_INCLUDED
 
-/*
-typedef enum note_enum
-{
-	INVALID_NOTE = -1,
-	A = 440,	
-	B = 494,
-	C = 262,
-	D = 294,
-	E = 330,
-	F = 349,
-	G = 392,
-} Note;
-*/
+#define MAX_AUDIO 5			//Maximum number of sound effects supported
 
+//The various wave types we can play
 typedef enum wave_mode_enum
 {
 	TRIANGLE = 0,
@@ -22,6 +11,7 @@ typedef enum wave_mode_enum
 } WAVE_MODE;
 
 
+//The various notes we can play
 typedef enum note_enum
 {
 	A = 0,	
@@ -34,11 +24,13 @@ typedef enum note_enum
 	NOTE_NUM,
 
 	//Special value
-	X = -1,
-	SILENCE = X
+	SILENCE = -1,			//Silence
+	X = SILENCE,			//Alias for Silence
+	STOP = -2			//End of track
 } Note;
 
 
+//Data structure for an audio track
 typedef struct audio_struct
 {
 	int length;			//actual length of the audio track

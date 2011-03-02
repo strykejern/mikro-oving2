@@ -3,104 +3,12 @@
 #include "../headers/typedef.h"
 #include "../headers/sound.h"
 #include "../headers/io.h"
-
-
-//Music files
-int sample_song[] = { 
- X, 500,
- C, 2400,
- X, 500,
- D, 2400,
- X, 500,
- E, 2400,
- X, 500,
- F, 2400,
- X, 500,
- G, 4800,
- X, 500,
- G, 4800,
- X, 500,
- A, 2400,
- X, 500,
- A, 2400,
- X, 500,
- A, 2400,
- X, 500,
- A, 2400,
- X, 500,
- G, 6000,
- X, 500,
- F, 2400,
- X, 500,
- F, 2400,
- X, 500,
- F, 2400,
- X, 500,
- F, 2400,
- X, 500,
- E, 4800,
- X, 500,
- E, 4800,
- X, 500,
- D, 2400,
- X, 500,
- D, 2400,
- X, 500,
- D, 2400,
- X, 500,
- D, 2400,
- X, 500,
- C, 10000
- };
-
-
-
-
-int ducktales_song[] = { 
-
-//Verse 1
-E, 1200,
-D, 1200,
-A, 1200,
-E, 1200,
-D, 1200,
-A, 1200,
-D, 1200,
-A, 1200,
-F, 1200,
-B, 1200,
-A, 1200,
-B, 1200
-
-}; 
-
-int beatles_song[] = { 
-
- C, 100,
- D, 100,
- E, 100,
- F, 100,
- G, 100,
- A, 100,
- B, 100
-
- }; 
-
-
-int test_song[] = { 
- B, 100,
- A, 100,
- G, 100,
- F, 100,
- E, 100,
- D, 100,
- C, 100
- }; 
+#include "../headers/sound_effects.h"
 
 //Private variables
 static int current_song;
 static int note_precache[NOTE_NUM];
-static Audio audio_list[8];
+static Audio audio_list[MAX_AUDIO];
 
 static Note current_note = SILENCE;	//Current note being played (SILENCE if there is none)
 static WAVE_MODE wave_mode = SQUARE;
@@ -111,6 +19,7 @@ static short amplitude = SHRT_MAX/4;	//25% volume
 void _precache_notes();
 short _square_wave();
 short _triangle_wave();
+int _load_audio( int array[], const int length );
 
 /** Reset and set the current song **/
 bool SOUND_set_audio( const int songnum )
@@ -121,6 +30,9 @@ bool SOUND_set_audio( const int songnum )
 	current_song = songnum;
 	audio_list[current_song].offset = 0;
 
+	current_note = (int) *(audio_list[current_song].array_start );
+	RTC_set_top( (int) *(audio_list[current_song].array_start + 1) );
+
 	SOUND_play();
 
 	return true;
@@ -129,46 +41,60 @@ bool SOUND_set_audio( const int songnum )
 /** Initializes the sound subsystem **/
 void SOUND_initialize()
 {
-	//Load one song
-	audio_list[1].length = ARRAY_SIZE( sample_song );
-	audio_list[1].array_start = &sample_song[0];
+	//Load paddle left
+	_load_audio( paddle_left, ARRAY_SIZE(paddle_left) );
 
-	//Load one song
-	audio_list[2].length = ARRAY_SIZE( ducktales_song );
-	audio_list[2].array_start = &ducktales_song[0];
+	//Load paddle right
+	_load_audio( paddle_right, ARRAY_SIZE(paddle_right) );
 
-	//Load one song
-	audio_list[3].length = ARRAY_SIZE( beatles_song );
-	audio_list[3].array_start = &beatles_song[0];
+	//Load paddle miss
+	_load_audio( paddle_fail, ARRAY_SIZE(paddle_fail) );
 
-	//Load one song
-	audio_list[4].length = ARRAY_SIZE( test_song );
-	audio_list[4].array_start = &test_song[0];
+	//Load victory song
+	_load_audio( victory_song, ARRAY_SIZE(victory_song) );
 	
+	//Load intro song
+	_load_audio( pong_song, ARRAY_SIZE(pong_song) );
+
 	//Finish up
 	_precache_notes();
 	SOUND_stop();
 }
 
+/** Loads an audio track into the first free audio slot found **/
+int _load_audio( int array[], const int length )
+{
+	static int slot = 0;
+
+	//Don't add invalid songs
+	if( slot >= MAX_AUDIO ) return -1;
+	if( (length & 1) != 0 ) return -1;
+
+	audio_list[slot].length = length;
+	audio_list[slot].array_start = &array[0];
+
+	return slot++;
+}
+
 void SOUND_pause()
 {
 //	DAC_set_interrupt_enabled(false);
-	RTC_set_interrupt_enabled(false);
+	RTC_set_enabled(false);
 	current_note = SILENCE;
 }
 
 void SOUND_play()
 {
 //	DAC_set_interrupt_enabled(true);
-	RTC_set_interrupt_enabled(true);
+	RTC_set_enabled(true);
 }
 
 void SOUND_stop()
 {
 //	DAC_set_interrupt_enabled(false);
-	RTC_set_interrupt_enabled(false);
+	RTC_set_enabled(false);
 	audio_list[current_song].offset = 0;
-	current_note = SILENCE;
+	current_note = STOP;
 }
 
 /** This function progresses a song to the next note **/
@@ -178,7 +104,7 @@ void SOUND_progress_tracker()
 	Audio *paudio = &audio_list[current_song];		
 
 	//Progress to next note
-	paudio->offset += 2;
+	if( current_note != STOP ) paudio->offset += 2;
 
 	//end of audio?
 	if( paudio->offset >= paudio->length-1 )

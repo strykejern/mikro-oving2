@@ -36,11 +36,11 @@ __int_handler *piob_int_handler()
 			pause = !pause;
 			if(pause) SOUND_pause(); else SOUND_play();
 		}
-		if( buttons_pushed & 2 ) SOUND_set_audio(1);
-		if( buttons_pushed & 4 ) SOUND_set_audio(2);
-		if( buttons_pushed & 8 ) SOUND_set_audio(3);
-		if( buttons_pushed & 16 ) SOUND_set_audio(4);
-		if( buttons_pushed & 32 ) ;
+		if( buttons_pushed & 2 ) SOUND_set_audio(0);
+		if( buttons_pushed & 4 ) SOUND_set_audio(1);
+		if( buttons_pushed & 8 ) SOUND_set_audio(2);
+		if( buttons_pushed & 16 ) SOUND_set_audio(3);
+		if( buttons_pushed & 32 ) SOUND_set_audio(4);
 		if( buttons_pushed & 64 ) SOUND_set_wave_mode(SQUARE);
 		if( buttons_pushed & 128 ) SOUND_set_wave_mode(TRIANGLE);
 	}
@@ -55,11 +55,8 @@ __int_handler *dac_int_handler()
 {	
 	short sound_data = SOUND_get_next_sample();
 	
-	if( sound_data )
-	{
-		pdac->SDR.channel0 = sound_data;	//Left
-		pdac->SDR.channel1 = sound_data;	//Right
-	}
+	pdac->SDR.channel0 = sound_data;	//Left
+	pdac->SDR.channel1 = sound_data;	//Right
 
 	//Enable next interrupt
 	pdac->isr;
@@ -77,15 +74,6 @@ __int_handler *rtc_int_handler()
         return 0;
 }
 
-/** Initialize the RTC clock **/
-void RTC_initialize()
-{
-	//Enable interrupts
-	RTC_set_interrupt_enabled( true );
-
-	//How fast is the audio sample supposed to be played?
-	RTC_set_top( 1200 );
-}
 
 void RTC_set_top( int top )
 {
@@ -93,7 +81,7 @@ void RTC_set_top( int top )
 }
 
 /** Enable or disable Real Time Counter interrupts **/
-void RTC_set_interrupt_enabled( bool enable )
+void RTC_set_enabled( bool enable )
 {
         psm->RTC_CTRL.en = enable;
         psm->RTC_CTRL.psel = enable;
@@ -102,6 +90,10 @@ void RTC_set_interrupt_enabled( bool enable )
 
 	//Enable interrupts
 	psm->rtc_ier = enable;
+
+	//Flush any sound data to remove any background noise
+	pdac->SDR.channel0 = 0;		//Left
+	pdac->SDR.channel1 = 0;		//Right
 }
 
 /** Enable or disable sound output **/

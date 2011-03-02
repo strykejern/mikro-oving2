@@ -76,14 +76,25 @@ B, 1200
 
 int beatles_song[] = { 
 
- 
+ C, 100,
+ D, 100,
+ E, 100,
+ F, 100,
+ G, 100,
+ A, 100,
+ B, 100
 
  }; 
 
 
 int test_song[] = { 
- C, X, C, X, C, B, B, B, X, B, X, B, X, B, A, A, A,
- C, X, C, X, C, B, B, B, A, A, D, E, D, E, F, E, D, C
+ B, 100,
+ A, 100,
+ G, 100,
+ F, 100,
+ E, 100,
+ D, 100,
+ C, 100
  }; 
 
 //Private variables
@@ -131,8 +142,8 @@ void SOUND_initialize()
 	audio_list[3].array_start = &beatles_song[0];
 
 	//Load one song
-	audio_list[3].length = ARRAY_SIZE( test_song );
-	audio_list[3].array_start = &test_song[0];
+	audio_list[4].length = ARRAY_SIZE( test_song );
+	audio_list[4].array_start = &test_song[0];
 	
 	//Finish up
 	_precache_notes();

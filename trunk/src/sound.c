@@ -34,7 +34,7 @@ Note test_song[] = {
 
 //Private variables
 static int current_song;
-static Note note_precache[NOTE_NUM];
+static int note_precache[NOTE_NUM];
 static Song audio_list[8];
 
 static Note current_note = SILENCE;	//Current note being played (SILENCE if there is none)
@@ -87,36 +87,26 @@ void SOUND_initialize()
 /** This function progresses a song to the next note **/
 void SOUND_progress_tracker()
 {
-	static int note_length = 0;
+	BITFIELD bits;
+	Song *psong = &audio_list[current_song];		
 
-	//Change to next note?
-	note_length++;
-	if( note_length >= 150 )
+	//get next note
+	if( psong->offset++ >= psong->length-1 ) psong->offset = 0;
+	current_note = (Note) *(psong->array_start + psong->offset);
+
+	//Display LED for which note we are playing
+	switch( current_note )
 	{
-		BITFIELD bits;
-		Song *psong = &audio_list[current_song];		
-
-		//Reset counter
-		note_length = 0;
-
-		//get next note
-		if( psong->offset++ >= psong->length-1 ) psong->offset = 0;
-		current_note = (Note) *(psong->array_start + psong->offset);
-
-		//Display LED for which note we are playing
-		switch( current_note )
-		{
-			case A: bits = 1; break;
-			case B: bits = 2; break;
-			case C: bits = 4; break;
-			case D: bits = 8; break;
-			case E: bits = 16; break;
-			case F: bits = 32; break;
-			case G: bits = 64; break;
-			default: bits = 0; break;
-		}
-		LED_set_enabled( bits );
+		case A: bits = 1; break;
+		case B: bits = 2; break;
+		case C: bits = 4; break;
+		case D: bits = 8; break;
+		case E: bits = 16; break;
+		case F: bits = 32; break;
+		case G: bits = 64; break;
+		default: bits = 0; break;
 	}
+	LED_set_enabled( bits );
 }
 
 void SOUND_set_sound_mode( WAVE_MODE mode )
@@ -127,9 +117,6 @@ void SOUND_set_sound_mode( WAVE_MODE mode )
 /** This function gets the next audio sample **/
 short SOUND_get_next_sample()
 {
-	//TODO: move this function to RTC
-	SOUND_progress_tracker();
-
 	//Do we have something to play?
 	if( current_note == SILENCE ) return 0;
 

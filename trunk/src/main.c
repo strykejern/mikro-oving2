@@ -2,6 +2,7 @@
 #include "../headers/io.h"
 #include "../headers/sound.h"
 
+//private functions
 void sleep();
 
 /** This is where the program starts **/
@@ -12,12 +13,12 @@ int main()
 	LED_initialize( 0xFF );			//LED lamps
 	IO_initialize_interrupts();		//interrupt controller
 	SOUND_initialize();			//sound sub-system
-	AUDIO_initialize();			//audio output controller
-
+	RTC_initialize();
+	DAC_initialize();			//audio output controller
+	
 	while( true )
 	{
 		sleep();
-		//SOUND_progress_tracker();
 	}
 	
 	return EXIT_SUCCESS;

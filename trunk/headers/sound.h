@@ -18,7 +18,8 @@ typedef enum note_enum
 typedef enum wave_mode_enum
 {
 	TRIANGLE = 0,
-	SQUARE
+	SQUARE,
+ 	SINE
 } WAVE_MODE;
 
 

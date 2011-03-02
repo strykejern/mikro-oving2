@@ -1,7 +1,5 @@
 #include <avr32/ap7000.h>
 #include <sys/interrupts.h>
-#include <limits.h>
-#include <math.h>
 
 #include "../headers/typedef.h"
 #include "../headers/io.h"
@@ -19,8 +17,6 @@ static volatile avr32_sm_t *psm   = &AVR32_SM;		//Power Manager
 __int_handler *piob_int_handler();
 __int_handler *dac_int_handler();
 
-//Private variables
-static int frequency = 0;
 
 __int_handler *piob_int_handler() 
 {
@@ -49,55 +45,12 @@ __int_handler *piob_int_handler()
 
 __int_handler *dac_int_handler() 
 {	
-	static short amplitude = SHRT_MAX/4;	//25% volume
-	static int freq_clock = 0;
-	static int note_length = 0;
-
-	//Change to next note?
-	note_length++;
-	if( note_length >= 15000 )
-	{
-		Song *psong = SOUND_get_current_song(0);
-		Note current_note;
-		int note;
-
-		//Reset counter
-		note_length = 0;
-
-		//get next note
-		if( psong->offset++ >= psong->length-1 ) psong->offset = 0;
-		current_note = (Note) *(psong->array_start + psong->offset);
-
-		//transform note to frequency
-		frequency = SOUND_get_note_frequency( current_note );
-
-		//Display LED for which note we are playing
-		switch( current_note )
-		{
-			case A: note = 1; break;
-			case B: note = 2; break;
-			case C: note = 4; break;
-			case D: note = 8; break;
-			case E: note = 16; break;
-			case F: note = 32; break;
-			case G: note = 64; break;
-			default: note = 0; break;
-		}
-		LED_set_enabled( note );
-	}
-
-	//Do we have something to play?
-	if( frequency != SILENCE )
-	{	
-		//Play square wave
-		if( freq_clock++ >= frequency )
-		{
-			freq_clock = 0;
-			amplitude = -amplitude;
-		}
+	short sound_data = SOUND_get_next_sample();
 	
-		pdac->SDR.channel0 = amplitude;	//Left
-		pdac->SDR.channel1 = amplitude;	//Right
+	if( sound_data )
+	{
+		pdac->SDR.channel0 = sound_data;	//Left
+		pdac->SDR.channel1 = sound_data;	//Right
 	}
 
 	//Enable next interrupt
@@ -144,16 +97,6 @@ void BUTTONS_initialize( const BITFIELD bits )
 	piob->idr = ~bits;
 }
 
-void RTC_initialize()
-{
-	psm->RTC_CTRL.en = true;
-	psm->RTC_CTRL.topen = 1;
-	psm->RTC_CTRL.psel = 0;
-	psm->RTC_CTRL.pclr = 1;
-	psm->rtc_top = 1;
-	
-	psm->rtc_ier = true;
-}
 
 /** This function initializes the LED lamps **/
 void LED_initialize( const BITFIELD bits ) 
@@ -174,7 +117,7 @@ void LED_set_enabled( const BITFIELD bits )
 	pioc->sodr = bits;
 }
 
-/** Initialize interrupts, do last **/
+/** Initialize interrupts **/
 void IO_initialize_interrupts()
 {
 	set_interrupts_base( (void *) AVR32_INTC_ADDRESS );

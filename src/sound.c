@@ -1,5 +1,8 @@
+#include <limits.h>
+
 #include "../headers/typedef.h"
 #include "../headers/sound.h"
+#include "../headers/io.h"
 
 //Music files
 Note sample_song[] = { 
@@ -32,7 +35,8 @@ Note test_song[] = {
 //Private variables
 static int current_song;
 static Note note_precache[NOTE_NUM];
-static Song songs_loaded[8];
+static Song audio_list[8];
+static Note current_note = SILENCE;	//Current note being played (SILENCE if there is none)
 
 //Private functions
 void precache_notes();
@@ -44,48 +48,94 @@ bool SOUND_set_current_song( const int songnum )
 	if( songnum < 0 || songnum >= 8 ) return false;
 
 	current_song = songnum;
-	songs_loaded[current_song].offset = 0;
+	audio_list[current_song].offset = 0;
 
 	return true;
-}
-
-
-/** Get a pointer to the current song **/
-Song* SOUND_get_current_song()
-{
-	return &songs_loaded[current_song];
-}
-
-int SOUND_get_note_frequency( const Note type )
-{
-	//Trap invalid notes
-	if( type <= SILENCE || type >= NOTE_NUM ) return SILENCE;
-
-	return note_precache[type];
 }
 
 /** Initializes the sound subsystem **/
 void SOUND_initialize()
 {
 	//Load one song
-	songs_loaded[1].length = ARRAY_SIZE( sample_song );
-	songs_loaded[1].array_start = &sample_song[0];
+	audio_list[1].length = ARRAY_SIZE( sample_song );
+	audio_list[1].array_start = &sample_song[0];
 
 	//Load one song
-	songs_loaded[2].length = ARRAY_SIZE( ducktales_song );
-	songs_loaded[2].array_start = &ducktales_song[0];
+	audio_list[2].length = ARRAY_SIZE( ducktales_song );
+	audio_list[2].array_start = &ducktales_song[0];
 
 	//Load one song
-	songs_loaded[3].length = ARRAY_SIZE( beatles_song );
-	songs_loaded[3].array_start = &beatles_song[0];
+	audio_list[3].length = ARRAY_SIZE( beatles_song );
+	audio_list[3].array_start = &beatles_song[0];
 
 	//Load one song
-	songs_loaded[3].length = ARRAY_SIZE( test_song );
-	songs_loaded[3].array_start = &test_song[0];
+	audio_list[3].length = ARRAY_SIZE( test_song );
+	audio_list[3].array_start = &test_song[0];
 	
 	//Finish up
 	precache_notes();
 	SOUND_set_current_song(0);
+}
+
+/** This function progresses a song to the next note **/
+void SOUND_progress_tracker()
+{
+	static int note_length = 0;
+
+	//Change to next note?
+	note_length++;
+	if( note_length >= 15000 )
+	{
+		BITFIELD bits;
+		Song *psong = &audio_list[current_song];		
+
+		//Reset counter
+		note_length = 0;
+
+		//get next note
+		if( psong->offset++ >= psong->length-1 ) psong->offset = 0;
+		current_note = (Note) *(psong->array_start + psong->offset);
+
+		//Display LED for which note we are playing
+		switch( current_note )
+		{
+			case A: bits = 1; break;
+			case B: bits = 2; break;
+			case C: bits = 4; break;
+			case D: bits = 8; break;
+			case E: bits = 16; break;
+			case F: bits = 32; break;
+			case G: bits = 64; break;
+			default: bits = 0; break;
+		}
+		LED_set_enabled( bits );
+	}
+}
+
+/** This function gets the next audio sample **/
+short SOUND_get_next_sample()
+{
+	static short amplitude = SHRT_MAX/4;	//25% volume
+	static int freq_clock = 0;
+
+	SOUND_progress_tracker();
+
+	//Do we have something to play?
+	if( current_note != SILENCE )
+	{	
+		//Play square wave
+		if( freq_clock++ >= note_precache[current_note] )
+		{
+			freq_clock = 0;
+			amplitude = -amplitude;
+		}
+	
+		//Sound
+		return amplitude;
+	}
+
+	//No sound
+	return 0;
 }
 
 /** Precache note frequencies in a lookup table so we don't have to recalculate these each interrupt**/

@@ -39,9 +39,9 @@ typedef struct song_struct
 } Song;
 
 /** Function prototypes, these are "Public" functions **/
-Song* SOUND_get_current_song();
 bool SOUND_set_current_song( const int songnum );
+short SOUND_get_next_sample();
 void SOUND_initialize();
-int SOUND_get_note_frequency( const Note type );
+void SOUND_progress_tracker();
 
 #endif	/* SOUND_HEADER_INCLUDED */

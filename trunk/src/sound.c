@@ -89,20 +89,20 @@ int test_song[] = {
 //Private variables
 static int current_song;
 static int note_precache[NOTE_NUM];
-static Song audio_list[8];
+static Audio audio_list[8];
 
-static Note current_note = X;	//Current note being played (X if there is none)
+static Note current_note = SILENCE;	//Current note being played (SILENCE if there is none)
 static WAVE_MODE wave_mode = SQUARE;
 
 static short amplitude = SHRT_MAX/4;	//25% volume
 
 //Private functions
-void precache_notes();
-short square_wave();
-short triangle_wave();
+void _precache_notes();
+short _square_wave();
+short _triangle_wave();
 
 /** Reset and set the current song **/
-bool SOUND_set_current_song( const int songnum )
+bool SOUND_set_audio( const int songnum )
 {
 	//Invalid song?
 	if( songnum < 0 || songnum >= 8 ) return false;
@@ -135,8 +135,8 @@ void SOUND_initialize()
 	audio_list[3].array_start = &test_song[0];
 	
 	//Finish up
-	precache_notes();
-	SOUND_set_current_song(0);
+	_precache_notes();
+	SOUND_stop();
 }
 
 void SOUND_pause()
@@ -164,24 +164,23 @@ void SOUND_stop()
 void SOUND_progress_tracker()
 {
 	BITFIELD bits;
-	Song *psong = &audio_list[current_song];		
+	Audio *paudio = &audio_list[current_song];		
 
 	//Progress to next note
-	psong->offset += 2;
+	paudio->offset += 2;
 
 	//end of audio?
-	if( psong->offset >= psong->length-1 )
+	if( paudio->offset >= paudio->length-1 )
 	{
 		SOUND_stop();
-		//psong->offset = 0;
 		return;
 	}
 
 	//Set the duration of this note
-	RTC_set_top( (int) *(psong->array_start + psong->offset + 1) );
+	RTC_set_top( (int) *(paudio->array_start + paudio->offset + 1) );
 
 	//get next note
-	current_note = (Note) *(psong->array_start + psong->offset);
+	current_note = (Note) *(paudio->array_start + paudio->offset);
 	
 	//Display LED for which note we are playing
 	switch( current_note )
@@ -198,7 +197,7 @@ void SOUND_progress_tracker()
 	LED_set_enabled( bits );
 }
 
-void SOUND_set_sound_mode( WAVE_MODE mode )
+void SOUND_set_wave_mode( WAVE_MODE mode )
 {
 	wave_mode = mode;
 }
@@ -209,14 +208,14 @@ short SOUND_get_next_sample()
 	//Do we have something to play?
 	if( current_note == X ) return 0;
 
-	if( wave_mode == TRIANGLE ) return triangle_wave();
-	if( wave_mode == SQUARE   ) return square_wave();
+	if( wave_mode == TRIANGLE ) return _triangle_wave();
+	if( wave_mode == SQUARE   ) return _square_wave();
 
 	//No sound
 	return 0;
 }
 
-short square_wave()
+short _square_wave()
 {
 	static int freq_clock = 0;
 	static bool rising = false;
@@ -231,7 +230,7 @@ short square_wave()
 	return rising ? amplitude : -amplitude;
 }
 
-short triangle_wave()
+short _triangle_wave()
 {
 	static int cycle = 0;
 	static bool rising = true;
@@ -261,7 +260,7 @@ short triangle_wave()
 }
 
 /** Precache note frequencies in a lookup table so we don't have to recalculate these each interrupt**/
-void precache_notes()
+void _precache_notes()
 {
 	//Octave 0 notes
 	note_precache[C] = ( 12000000LL / 256LL ) / 523;

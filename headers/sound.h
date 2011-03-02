@@ -18,8 +18,7 @@ typedef enum note_enum
 typedef enum wave_mode_enum
 {
 	TRIANGLE = 0,
-	SQUARE,
- 	SINE
+	SQUARE
 } WAVE_MODE;
 
 
@@ -35,7 +34,7 @@ typedef enum note_enum
 	NOTE_NUM,
 
 	//Special value
-	SILENCE = -1
+	X = -1
 } Note;
 
 

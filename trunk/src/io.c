@@ -30,9 +30,9 @@ __int_handler *piob_int_handler()
 	//Only register on release, not on push down
 	if( button_release )
 	{
-		static bool pause = false;
 		if( buttons_pushed & 1 )
 		{
+			static bool pause = false;
 			pause = !pause;
 			if(pause) SOUND_pause(); else SOUND_play();
 		}

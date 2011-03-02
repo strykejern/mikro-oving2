@@ -34,7 +34,8 @@ typedef enum note_enum
 	NOTE_NUM,
 
 	//Special value
-	X = -1
+	X = -1,
+	SILENCE = X
 } Note;
 
 

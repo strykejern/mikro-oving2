@@ -113,6 +113,7 @@ void SOUND_pause()
 {
 //	DAC_set_interrupt_enabled(false);
 	RTC_set_interrupt_enabled(false);
+	current_note = SILENCE;
 }
 
 void SOUND_play()
@@ -126,6 +127,7 @@ void SOUND_stop()
 //	DAC_set_interrupt_enabled(false);
 	RTC_set_interrupt_enabled(false);
 	audio_list[current_song].offset = 0;
+	current_note = SILENCE;
 }
 
 /** This function progresses a song to the next note **/
@@ -217,8 +219,8 @@ short triangle_wave()
 			cycle = -note;
 		}
 	}
-	
-	return (cycle * (int)amplitude * 4) / note;
+
+	return (cycle * amplitude * 4) / note;
 }
 
 /** Precache note frequencies in a lookup table so we don't have to recalculate these each interrupt**/

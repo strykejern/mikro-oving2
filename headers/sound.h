@@ -39,17 +39,17 @@ typedef enum note_enum
 } Note;
 
 
-typedef struct song_struct
+typedef struct audio_struct
 {
-	int length;			//actual length of the song
-	int offset;			//current position in the song
+	int length;			//actual length of the audio track
+	int offset;			//current position in the audio track
 	int *array_start;		//pointer to array start
-} Song;
+} Audio;
 
 /** Function prototypes, these are "Public" functions **/
 void SOUND_initialize();
-void SOUND_set_sound_mode( WAVE_MODE mode );
-bool SOUND_set_current_song( const int songnum );
+void SOUND_set_wave_mode( WAVE_MODE mode );
+bool SOUND_set_audio( const int number );
 
 void SOUND_progress_tracker();
 short SOUND_get_next_sample();

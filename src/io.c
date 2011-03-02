@@ -36,13 +36,13 @@ __int_handler *piob_int_handler()
 			pause = !pause;
 			if(pause) SOUND_pause(); else SOUND_play();
 		}
-		if( buttons_pushed & 2 ) SOUND_set_current_song(1);
-		if( buttons_pushed & 4 ) SOUND_set_current_song(2);
-		if( buttons_pushed & 8 ) SOUND_set_current_song(3);
-		if( buttons_pushed & 16 ) SOUND_set_current_song(4);
+		if( buttons_pushed & 2 ) SOUND_set_audio(1);
+		if( buttons_pushed & 4 ) SOUND_set_audio(2);
+		if( buttons_pushed & 8 ) SOUND_set_audio(3);
+		if( buttons_pushed & 16 ) SOUND_set_audio(4);
 		if( buttons_pushed & 32 ) ;
-		if( buttons_pushed & 64 ) SOUND_set_sound_mode(SQUARE);
-		if( buttons_pushed & 128 ) SOUND_set_sound_mode(TRIANGLE);
+		if( buttons_pushed & 64 ) SOUND_set_wave_mode(SQUARE);
+		if( buttons_pushed & 128 ) SOUND_set_wave_mode(TRIANGLE);
 	}
 
 	button_release = !button_release;

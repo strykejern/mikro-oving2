@@ -41,7 +41,7 @@ typedef struct audio_struct
 /** Function prototypes, these are "Public" functions **/
 void SOUND_initialize();
 void SOUND_next_wave_mode();
-bool SOUND_set_audio( const int number );
+bool SOUND_play_audio( const int number );
 
 void SOUND_progress_tracker();
 short SOUND_get_next_sample();

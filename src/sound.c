@@ -23,7 +23,7 @@ static short 	triangle_wave();
 static int 	load_audio( int array[], const int length );
 
 /** Reset and set the current song **/
-bool SOUND_set_audio( const int songnum )
+bool SOUND_play_audio( const int songnum )
 {
 	//Invalid audio?
 	if( songnum < 0 || songnum >= 8 ) return false;

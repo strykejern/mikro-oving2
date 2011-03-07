@@ -30,11 +30,11 @@ __int_handler *piob_int_handler()
 	//Only register on release, not on push down
 	if( button_release )
 	{
-		if( buttons_pushed & 1 ) SOUND_set_audio(0);
-		if( buttons_pushed & 2 ) SOUND_set_audio(1);
-		if( buttons_pushed & 4 ) SOUND_set_audio(2);
-		if( buttons_pushed & 8 ) SOUND_set_audio(3);
-		if( buttons_pushed & 16 ) SOUND_set_audio(4);
+		if( buttons_pushed & 1 ) SOUND_play_audio(0);
+		if( buttons_pushed & 2 ) SOUND_play_audio(1);
+		if( buttons_pushed & 4 ) SOUND_play_audio(2);
+		if( buttons_pushed & 8 ) SOUND_play_audio(3);
+		if( buttons_pushed & 16 ) SOUND_play_audio(4);
 		if( buttons_pushed & 32 ) SOUND_change_volume(-1);
 		if( buttons_pushed & 64 ) SOUND_change_volume(1);
 		if( buttons_pushed & 128 ) SOUND_next_wave_mode();
@@ -115,7 +115,6 @@ void DAC_initialize()
 	piob->ASR.p20 = true;		//Tell it that Peripheral 1 is now the controller
 	piob->ASR.p21 = true;
 
-
 	//Enable the Digital to Audio Converter (DAC) interrupts
 	DAC_set_interrupt_enabled( true );
 
@@ -162,8 +161,8 @@ void IO_initialize_interrupts()
 {
 	set_interrupts_base( (void *) AVR32_INTC_ADDRESS );
 	register_interrupt( (__int_handler)( piob_int_handler ), AVR32_PIOB_IRQ / 32, AVR32_PIOB_IRQ % 32, INT0 );
-	register_interrupt( (__int_handler)( dac_int_handler  ), AVR32_DAC_IRQ / 32,  AVR32_DAC_IRQ % 32,  INT0 );
-	register_interrupt( (__int_handler)( rtc_int_handler  ), AVR32_SM_RTC_IRQ / 32,  AVR32_SM_RTC_IRQ % 32,  INT1 );
+	register_interrupt( (__int_handler)( dac_int_handler  ), AVR32_DAC_IRQ / 32,  AVR32_DAC_IRQ % 32,  INT1 );
+	register_interrupt( (__int_handler)( rtc_int_handler  ), AVR32_SM_RTC_IRQ / 32,  AVR32_SM_RTC_IRQ % 32,  INT2 );
 	init_interrupts();
 }
 

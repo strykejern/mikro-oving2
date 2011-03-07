@@ -1,27 +1,27 @@
 <?xml version = '1.0' encoding = 'UTF-8'?>
 <!DOCTYPE KDevPrjSession>
 <KDevPrjSession>
- <DocsAndViews NumberOfDocuments="9" >
+ <DocsAndViews NumberOfDocuments="12" >
   <Doc0 NumberOfViews="1" URL="file:///home/dmlab/johanja/mikro-oving2/src/io.c" >
-   <View0 Encoding="" Type="Source" />
+   <View0 Encoding="" line="83" Type="Source" />
   </Doc0>
   <Doc1 NumberOfViews="1" URL="file:///home/dmlab/johanja/mikro-oving2/Makefile" >
-   <View0 Encoding="" Type="Source" />
+   <View0 Encoding="" line="6" Type="Source" />
   </Doc1>
   <Doc2 NumberOfViews="1" URL="file:///home/dmlab/johanja/mikro-oving2/headers/io.h" >
-   <View0 Encoding="" Type="Source" />
+   <View0 Encoding="" line="10" Type="Source" />
   </Doc2>
   <Doc3 NumberOfViews="1" URL="file:///home/dmlab/johanja/mikro-oving2/src/main.c" >
-   <View0 Encoding="" Type="Source" />
+   <View0 Encoding="" line="14" Type="Source" />
   </Doc3>
   <Doc4 NumberOfViews="1" URL="file:///usr/include/stdint.h" >
-   <View0 Encoding="" Type="Source" />
+   <View0 Encoding="" line="0" Type="Source" />
   </Doc4>
   <Doc5 NumberOfViews="1" URL="file:///home/dmlab/johanja/mikro-oving2/headers/typedef.h" >
-   <View0 Encoding="" Type="Source" />
+   <View0 Encoding="" line="0" Type="Source" />
   </Doc5>
   <Doc6 NumberOfViews="1" URL="file:///usr/avr32/include/avr32/ap7000.h" >
-   <View0 Encoding="" Type="Source" />
+   <View0 Encoding="" line="731" Type="Source" />
   </Doc6>
   <Doc7 NumberOfViews="1" URL="file:///usr/avr32/include/avr32/dac_101.h" >
    <View0 Encoding="" Type="Source" />
@@ -29,6 +29,15 @@
   <Doc8 NumberOfViews="1" URL="file:///usr/include/math.h" >
    <View0 Encoding="" line="401" Type="Source" />
   </Doc8>
+  <Doc9 NumberOfViews="1" URL="file:///home/dmlab/johanja/mikro-oving2/src/sound.c" >
+   <View0 Encoding="" line="10" Type="Source" />
+  </Doc9>
+  <Doc10 NumberOfViews="1" URL="file:///home/dmlab/johanja/mikro-oving2/headers/sound.h" >
+   <View0 Encoding="" line="20" Type="Source" />
+  </Doc10>
+  <Doc11 NumberOfViews="1" URL="file:///home/dmlab/johanja/mikro-oving2/headers/sound_effects.h" >
+   <View0 Encoding="" line="169" Type="Source" />
+  </Doc11>
  </DocsAndViews>
  <pluginList>
   <kdevdebugger>

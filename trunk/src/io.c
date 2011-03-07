@@ -30,19 +30,14 @@ __int_handler *piob_int_handler()
 	//Only register on release, not on push down
 	if( button_release )
 	{
-		if( buttons_pushed & 1 )
-		{
-			static bool pause = false;
-			pause = !pause;
-			if(pause) SOUND_pause(); else SOUND_play();
-		}
-		if( buttons_pushed & 2 ) SOUND_set_audio(0);
-		if( buttons_pushed & 4 ) SOUND_set_audio(1);
-		if( buttons_pushed & 8 ) SOUND_set_audio(2);
-		if( buttons_pushed & 16 ) SOUND_set_audio(3);
-		if( buttons_pushed & 32 ) SOUND_set_audio(4);
-		if( buttons_pushed & 64 ) SOUND_set_wave_mode(SQUARE);
-		if( buttons_pushed & 128 ) SOUND_set_wave_mode(TRIANGLE);
+		if( buttons_pushed & 1 ) SOUND_set_audio(0);
+		if( buttons_pushed & 2 ) SOUND_set_audio(1);
+		if( buttons_pushed & 4 ) SOUND_set_audio(2);
+		if( buttons_pushed & 8 ) SOUND_set_audio(3);
+		if( buttons_pushed & 16 ) SOUND_set_audio(4);
+		if( buttons_pushed & 32 ) SOUND_change_volume(-1);
+		if( buttons_pushed & 64 ) SOUND_change_volume(1);
+		if( buttons_pushed & 128 ) SOUND_next_wave_mode();
 	}
 
 	button_release = !button_release;
@@ -74,7 +69,7 @@ __int_handler *rtc_int_handler()
         return 0;
 }
 
-
+/** This sets the time between timeouts for the RTC clock **/
 void RTC_set_top( int top )
 {
 	psm->rtc_top = top;

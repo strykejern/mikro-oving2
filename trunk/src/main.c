@@ -3,7 +3,7 @@
 #include "../headers/sound.h"
 
 //private functions
-void sleep();
+static void sleep();
 
 /** This is where the program starts **/
 int main()

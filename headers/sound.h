@@ -40,7 +40,7 @@ typedef struct audio_struct
 
 /** Function prototypes, these are "Public" functions **/
 void SOUND_initialize();
-void SOUND_set_wave_mode( WAVE_MODE mode );
+void SOUND_next_wave_mode();
 bool SOUND_set_audio( const int number );
 
 void SOUND_progress_tracker();
@@ -49,5 +49,7 @@ short SOUND_get_next_sample();
 void SOUND_stop();
 void SOUND_play();
 void SOUND_pause();
+
+int SOUND_change_volume( const int modify );
 
 #endif	/* SOUND_HEADER_INCLUDED */

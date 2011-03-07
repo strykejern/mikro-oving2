@@ -13,23 +13,26 @@ static Audio audio_list[MAX_AUDIO];
 static Note current_note = SILENCE;	//Current note being played (SILENCE if there is none)
 static WAVE_MODE wave_mode = SQUARE;
 
-static short amplitude = SHRT_MAX/4;	//25% volume
+static short amplitude; 		//SHRT_MAX/4;
+static int volume;
 
 //Private functions
-void _precache_notes();
-short _square_wave();
-short _triangle_wave();
-int _load_audio( int array[], const int length );
+static void 	precache_notes();
+static short 	square_wave();
+static short 	triangle_wave();
+static int 	load_audio( int array[], const int length );
 
 /** Reset and set the current song **/
 bool SOUND_set_audio( const int songnum )
 {
-	//Invalid song?
+	//Invalid audio?
 	if( songnum < 0 || songnum >= 8 ) return false;
 
+	//Reset track
 	current_song = songnum;
 	audio_list[current_song].offset = 0;
 
+	//Load the first note
 	current_note = (int) *(audio_list[current_song].array_start );
 	RTC_set_top( (int) *(audio_list[current_song].array_start + 1) );
 
@@ -38,31 +41,56 @@ bool SOUND_set_audio( const int songnum )
 	return true;
 }
 
+/** Increase or decrease sound volume (from 0 to 8) **/
+int SOUND_change_volume( const int modify )
+{
+	BITFIELD set_led = 0;
+	int i;
+
+	//Apply the change
+	volume += modify;
+	if( volume < 0 ) 	volume = 0;
+	else if (volume > 8 ) 	volume = 8;
+
+	//Calculate amplitude from volume level
+	amplitude = (volume == 0) ? 0 : SHRT_MAX / ( 17 - (volume*2) );
+
+	//Display volume on the LEDs
+	for( i = 0; i < volume; i++ ) set_led |= 1<<i;
+	LED_set_enabled( set_led );
+
+	return volume;
+}
+
 /** Initializes the sound subsystem **/
 void SOUND_initialize()
 {
 	//Load paddle left
-	_load_audio( paddle_left, ARRAY_SIZE(paddle_left) );
+	load_audio( paddle_left, ARRAY_SIZE(paddle_left) );
 
 	//Load paddle right
-	_load_audio( paddle_right, ARRAY_SIZE(paddle_right) );
+	load_audio( paddle_right, ARRAY_SIZE(paddle_right) );
 
 	//Load paddle miss
-	_load_audio( paddle_fail, ARRAY_SIZE(paddle_fail) );
+	load_audio( paddle_fail, ARRAY_SIZE(paddle_fail) );
 
 	//Load victory song
-	_load_audio( victory_song, ARRAY_SIZE(victory_song) );
+	load_audio( victory_song, ARRAY_SIZE(victory_song) );
 	
 	//Load intro song
-	_load_audio( pong_song, ARRAY_SIZE(pong_song) );
+	load_audio( pong_song, ARRAY_SIZE(pong_song) );
 
 	//Finish up
-	_precache_notes();
+	precache_notes();
 	SOUND_stop();
+
+	//so that amplitude is calculated
+	volume = 5;
+	SOUND_change_volume( 0 );
 }
 
 /** Loads an audio track into the first free audio slot found **/
-int _load_audio( int array[], const int length )
+int load_audio( int array[], const int length )
 {
 	static int slot = 0;
 
@@ -76,6 +104,7 @@ int _load_audio( int array[], const int length )
 	return slot++;
 }
 
+/** Stop playing sound without resetting tracker **/
 void SOUND_pause()
 {
 //	DAC_set_interrupt_enabled(false);
@@ -83,12 +112,14 @@ void SOUND_pause()
 	current_note = SILENCE;
 }
 
+/** Resume or start playing sound **/
 void SOUND_play()
 {
 //	DAC_set_interrupt_enabled(true);
 	RTC_set_enabled(true);
 }
 
+/** Stop playing the current sound and reset tracker position **/
 void SOUND_stop()
 {
 //	DAC_set_interrupt_enabled(false);
@@ -110,6 +141,7 @@ void SOUND_progress_tracker()
 	if( paudio->offset >= paudio->length-1 )
 	{
 		SOUND_stop();
+		LED_set_enabled( 0 );
 		return;
 	}
 
@@ -134,25 +166,31 @@ void SOUND_progress_tracker()
 	LED_set_enabled( bits );
 }
 
-void SOUND_set_wave_mode( WAVE_MODE mode )
+/** This function changes the audio wave output type **/
+void SOUND_next_wave_mode()
 {
-	wave_mode = mode;
+	switch( wave_mode )
+	{
+		case SQUARE: wave_mode = TRIANGLE; break;
+		case TRIANGLE: wave_mode = SQUARE; break;
+	}
 }
 
 /** This function gets the next audio sample **/
 short SOUND_get_next_sample()
 {
 	//Do we have something to play?
-	if( current_note == X ) return 0;
+	if( current_note == X || current_note == STOP ) return 0;
 
-	if( wave_mode == TRIANGLE ) return _triangle_wave();
-	if( wave_mode == SQUARE   ) return _square_wave();
+	if( wave_mode == TRIANGLE ) return triangle_wave();
+	if( wave_mode == SQUARE   ) return square_wave();
 
 	//No sound
 	return 0;
 }
 
-short _square_wave()
+/** This function generates an audio sample for a square wave **/
+short square_wave()
 {
 	static int freq_clock = 0;
 	static bool rising = false;
@@ -167,10 +205,12 @@ short _square_wave()
 	return rising ? amplitude : -amplitude;
 }
 
-short _triangle_wave()
+/** This function generates an audio sample for a triangle wave **/
+short triangle_wave()
 {
 	static int cycle = 0;
 	static bool rising = true;
+	int sound;
 	
 	int note = note_precache[current_note]>>1;
 	
@@ -193,11 +233,17 @@ short _triangle_wave()
 		}
 	}
 
-	return (cycle * amplitude * 4) / note;
+	sound = (cycle * amplitude * 4) / note;
+
+	//clip value to a short
+	if( sound >= SHRT_MAX ) sound = SHRT_MAX-1;
+	if( sound <= SHRT_MIN ) sound = SHRT_MIN+1;
+
+	return sound;
 }
 
 /** Precache note frequencies in a lookup table so we don't have to recalculate these each interrupt**/
-void _precache_notes()
+void precache_notes()
 {
 	//Octave 0 notes
 	note_precache[C] = ( 12000000LL / 256LL ) / 523;

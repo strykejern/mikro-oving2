@@ -47,6 +47,10 @@ int SOUND_change_volume( const int modify )
 	BITFIELD set_led = 0;
 	int i;
 
+	//turn on or off the sound
+	if( volume == 0 && volume + modify > 0 )     DAC_set_interrupt_enabled( true );
+	else if( volume > 0 && volume + modify < 1 ) DAC_set_interrupt_enabled( false );
+
 	//Apply the change
 	volume += modify;
 	if( volume < 0 ) 	volume = 0;
@@ -106,7 +110,6 @@ int load_audio( int array[], const int length )
 /** Stop playing sound without resetting tracker **/
 void SOUND_pause()
 {
-//	DAC_set_interrupt_enabled(false);
 	RTC_set_enabled(false);
 	current_note = SILENCE;
 }
@@ -117,16 +120,16 @@ void SOUND_play()
 	Audio *paudio = &audio_list[current_song];
 	current_note = (Note) *(paudio->array_start + paudio->offset);
 	RTC_set_enabled(true);
-//	DAC_set_interrupt_enabled(true);
+	//DAC_set_interrupt_enabled(true);	//We dont turn off the DAC because it causes an audible click sound
 }
 
 /** Stop playing the current sound and reset tracker position **/
 void SOUND_stop()
 {
-//	DAC_set_interrupt_enabled(false);
-	RTC_set_enabled(false);
 	audio_list[current_song].offset = 0;
 	current_note = EOT;
+	RTC_set_enabled(false);
+	//DAC_set_interrupt_enabled(false);	//We dont turn off the DAC because it causes an audible click sound
 }
 
 /** This function progresses a song to the next note **/

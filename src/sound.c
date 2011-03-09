@@ -196,7 +196,7 @@ short square_wave()
 	static bool rising = false;
 
 	//Play square wave
-	if( freq_clock++ >= note_precache[current_note] )
+	if( freq_clock++ >= note_precache[current_note] ) // **** Delt på 2? ****
 	{
 		freq_clock = 0;
 		rising = !rising;

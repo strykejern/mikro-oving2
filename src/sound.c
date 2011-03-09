@@ -158,13 +158,13 @@ void SOUND_progress_tracker()
 	//Display LED for which note we are playing
 	switch( current_note )
 	{
-		case A: bits = 1; break;
-		case B: bits = 2; break;
-		case C: bits = 4; break;
-		case D: bits = 8; break;
-		case E: bits = 16; break;
-		case F: bits = 32; break;
-		case G: bits = 64; break;
+		case C: bits = 1; break;
+		case D: bits = 2; break;
+		case E: bits = 4; break;
+		case F: bits = 8; break;
+		case G: bits = 16; break;
+		case A: bits = 32; break;
+		case B: bits = 64; break;
 		default: bits = 0; break;
 	}
 	LED_set_enabled( bits );
@@ -239,7 +239,7 @@ short triangle_wave()
 		}
 	}
 
-	sound = ((freq_clock * amplitude) / current_note)<<2;
+	sound = ((freq_clock * amplitude) / current_note)<<3;
 
 	//clip value to a short
 	if( sound >= SHRT_MAX ) sound = SHRT_MAX-1;

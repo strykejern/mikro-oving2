@@ -11,6 +11,7 @@ typedef enum wave_mode_enum
 	SAWTOOTH
 } WAVE_MODE;
 
+//The various notes we can play precached
 typedef enum note_enum {
 	C = ( 12000000LL / 256LL ) / 523,
 	D = ( 12000000LL / 256LL ) / 587,
@@ -24,25 +25,6 @@ typedef enum note_enum {
 	SILENCE = X,				//alias for Silence
 	EOT = -1				//end of track
 } Note;
-
-
-//The various notes we can play
-/*typedef enum note_enum
-{
-	A = 0,	
-	B,
-	C,
-	D,
-	E,
-	F,
-	G,
-	NOTE_NUM,
-
-	//Special value
-	SILENCE = -1,			//Silence
-	X = SILENCE,			//Alias for Silence
-	STOP = -2			//End of track
-} Note;*/
 
 
 //Data structure for an audio track

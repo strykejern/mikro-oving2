@@ -242,6 +242,19 @@ short triangle_wave()
 	return sound;
 }
 
+short sawtooth_wave()
+{
+	static int cycle = -note_precache[current_note];
+	
+	cycle++;
+	
+	int note = note_precache[current_note]>>1;
+	
+	if (cycle > note) cycle = -note;
+	
+	return (cycle * amplitude) / note;
+}
+
 /** Precache note frequencies in a lookup table so we don't have to recalculate these each interrupt**/
 void precache_notes()
 {

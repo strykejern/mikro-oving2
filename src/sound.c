@@ -7,7 +7,6 @@
 
 //Private variables
 static int current_song;
-static int note_precache[NOTE_NUM];
 static Audio audio_list[MAX_AUDIO];
 
 static Note current_note = SILENCE;	//Current note being played (SILENCE if there is none)
@@ -17,9 +16,9 @@ static short amplitude; 		//SHRT_MAX/4;
 static int volume;
 
 //Private functions
-static void 	precache_notes();
 static short 	square_wave();
 static short 	triangle_wave();
+static short	sawtooth_wave();
 static int 	load_audio( int array[], const int length );
 
 /** Reset and set the current song **/
@@ -81,7 +80,7 @@ void SOUND_initialize()
 	load_audio( pong_song, ARRAY_SIZE(pong_song) );
 
 	//Finish up
-	precache_notes();
+	//precache_notes();
 	SOUND_stop();
 
 	//so that amplitude is calculated
@@ -125,7 +124,7 @@ void SOUND_stop()
 //	DAC_set_interrupt_enabled(false);
 	RTC_set_enabled(false);
 	audio_list[current_song].offset = 0;
-	current_note = STOP;
+	current_note = EOT;
 }
 
 /** This function progresses a song to the next note **/
@@ -135,7 +134,7 @@ void SOUND_progress_tracker()
 	Audio *paudio = &audio_list[current_song];		
 
 	//Progress to next note
-	if( current_note != STOP ) paudio->offset += 2;
+	paudio->offset += 2;
 
 	//end of audio?
 	if( paudio->offset >= paudio->length-1 )
@@ -172,21 +171,30 @@ void SOUND_next_wave_mode()
 	switch( wave_mode )
 	{
 		case SQUARE: wave_mode = TRIANGLE; break;
-		case TRIANGLE: wave_mode = SQUARE; break;
+		case TRIANGLE: wave_mode = SAWTOOTH; break;
+		case SAWTOOTH: wave_mode = SQUARE; break;
 	}
 }
+
+static int tricycle = 0;
 
 /** This function gets the next audio sample **/
 short SOUND_get_next_sample()
 {
+	static short buffer;
 	//Do we have something to play?
-	if( current_note == X || current_note == STOP ) return 0;
+	if( current_note == SILENCE || current_note == EOT )
+	{
+		//tricycle = 0; 
+		return wave_mode == TRIANGLE ? buffer : 0;
+	}
 
-	if( wave_mode == TRIANGLE ) return triangle_wave();
-	if( wave_mode == SQUARE   ) return square_wave();
+	if( wave_mode == TRIANGLE ) buffer = triangle_wave();
+	if( wave_mode == SQUARE   ) buffer = square_wave();
+	if( wave_mode == SAWTOOTH ) buffer = sawtooth_wave();
 
 	//No sound
-	return 0;
+	return buffer;
 }
 
 /** This function generates an audio sample for a square wave **/
@@ -196,7 +204,7 @@ short square_wave()
 	static bool rising = false;
 
 	//Play square wave
-	if( freq_clock++ >= note_precache[current_note] ) // **** Delt på 2? ****
+	if( freq_clock++ >= current_note ) // **** Delt på 2? ****
 	{
 		freq_clock = 0;
 		rising = !rising;
@@ -208,32 +216,31 @@ short square_wave()
 /** This function generates an audio sample for a triangle wave **/
 short triangle_wave()
 {
-	static int cycle = 0;
 	static bool rising = true;
 	int sound;
 	
-	int note = note_precache[current_note]>>1;
-	
+	int note = current_note;
+
 	if (rising)
 	{
-		cycle++;
-		if (cycle >= note)
+		tricycle += 2;
+		if (tricycle >= note)
 		{
 			rising = false;
-			cycle = note;
+			tricycle = note;
 		}
 	}
 	else
 	{
-		cycle--;
-		if (cycle <= -note)
+		tricycle -= 2;
+		if (tricycle <= -note)
 		{
 			rising = true;
-			cycle = -note;
+			tricycle = -note;
 		}
 	}
 
-	sound = (cycle * amplitude * 4) / note;
+	sound = ((tricycle * amplitude) / note)<<2;
 
 	//clip value to a short
 	if( sound >= SHRT_MAX ) sound = SHRT_MAX-1;
@@ -244,11 +251,11 @@ short triangle_wave()
 
 short sawtooth_wave()
 {
-	static int cycle = -note_precache[current_note];
+	static int cycle = 0; //-note_precache[current_note];
 	
 	cycle++;
 	
-	int note = note_precache[current_note]>>1;
+	int note = current_note;
 	
 	if (cycle > note) cycle = -note;
 	
@@ -256,7 +263,7 @@ short sawtooth_wave()
 }
 
 /** Precache note frequencies in a lookup table so we don't have to recalculate these each interrupt**/
-void precache_notes()
+/*void precache_notes()
 {
 	//Octave 0 notes
 	note_precache[C] = ( 12000000LL / 256LL ) / 523;
@@ -267,3 +274,4 @@ void precache_notes()
 	note_precache[A] = ( 12000000LL / 256LL ) / 880;
 	note_precache[B] = ( 12000000LL / 256LL ) / 988;
 }
+*/

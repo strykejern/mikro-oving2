@@ -7,12 +7,27 @@
 typedef enum wave_mode_enum
 {
 	TRIANGLE = 0,
-	SQUARE
+	SQUARE,
+	SAWTOOTH
 } WAVE_MODE;
+
+typedef enum note_enum {
+	C = ( 12000000LL / 256LL ) / 523,
+	D = ( 12000000LL / 256LL ) / 587,
+	E = ( 12000000LL / 256LL ) / 659,
+	F = ( 12000000LL / 256LL ) / 698,
+	G = ( 12000000LL / 256LL ) / 784,
+	A = ( 12000000LL / 256LL ) / 880,
+	B = ( 12000000LL / 256LL ) / 988,
+
+	X = 0,					//Silence
+	SILENCE = X,				//alias for Silence
+	EOT = -1				//end of track
+} Note;
 
 
 //The various notes we can play
-typedef enum note_enum
+/*typedef enum note_enum
 {
 	A = 0,	
 	B,
@@ -27,7 +42,7 @@ typedef enum note_enum
 	SILENCE = -1,			//Silence
 	X = SILENCE,			//Alias for Silence
 	STOP = -2			//End of track
-} Note;
+} Note;*/
 
 
 //Data structure for an audio track
